@@ -167,13 +167,29 @@ head -5 resale_flat_data.csv
 
 ```
 resale_flat_price_2017_onwards/
-├── streamlit_app.py         # Main dashboard application (850+ lines)
-├── data_fetcher.py          # API integration and caching system
+├── streamlit_app.py         # Main dashboard application (970+ lines)
+├── data_fetcher.py          # API integration and caching system (227 lines)
+├── run_dashboard.sh         # Easy startup script
 ├── environment.yml          # Conda environment configuration  
+├── requirements.txt         # Pip requirements
 ├── readme.md               # Project documentation
 ├── resale_flat_data.csv    # Cached dataset (auto-generated)
-└── data_metadata.json      # Dataset metadata (auto-generated)
+├── data_metadata.json      # Dataset metadata (auto-generated)
+└── .gitignore              # Git ignore rules
 ```
+
+**Core Files (Essential):**
+- `streamlit_app.py` - The main dashboard application
+- `data_fetcher.py` - Handles API connections and data caching
+- `run_dashboard.sh` - Startup script for easy launching
+
+**Configuration Files:**
+- `environment.yml` - Conda environment setup
+- `requirements.txt` - Pip package requirements
+
+**Data Files (Auto-generated):**
+- `resale_flat_data.csv` - Local data cache (212,808+ records)
+- `data_metadata.json` - Data freshness tracking
 
 ## 🔧 Technical Details
 
@@ -226,9 +242,9 @@ export CSV_UPDATE_INTERVAL="daily"
 
 ### Performance Tips
 
-- **For First-Time Setup**: Run `python demo.py` to test basic connectivity
-- **For Development**: Use `python run_analysis.py` to test data processing
-- **For Production**: Use CSV caching and scheduled updates
+- **For First-Time Setup**: Use the startup script `./run_dashboard.sh`
+- **For Development**: Activate environment and run `streamlit run streamlit_app.py`
+- **For Production**: Use CSV caching and the refresh button for updates
 
 ## 📈 Analysis Features
 
@@ -264,7 +280,9 @@ The project uses Singapore's official resale flat price data from:
 ## 🛠️ Development Notes
 
 ### Code Quality
-- **726 lines** of production-ready Streamlit code
+- **980 lines** of production-ready Streamlit code (main dashboard)
+- **226 lines** of data fetching and caching logic
+- **1,206 total lines** of clean, documented Python code
 - **Modular Functions**: Separate functions for each analysis section
 - **Custom HTML/CSS**: Precise control over table formatting and alignment
 - **Error Handling**: Robust data validation and fallback mechanisms
