@@ -314,14 +314,75 @@ def create_price_trends(df):
     """Create price trend visualizations."""
     st.subheader("📈 Price Trends Analysis")
     
+    # Year selector for Price Trends Analysis
+    col1_filter, col2_filter = st.columns([1, 3])
+    with col1_filter:
+        available_years = sorted(df['year'].unique(), reverse=True)
+        year_options = ["All Years"] + [str(year) for year in available_years]
+        
+        # Set default to 2025 if available, otherwise "All Years"
+        default_index = 0  # Default to "All Years"
+        if "2025" in year_options:
+            default_index = year_options.index("2025")
+        
+        selected_year = st.selectbox(
+            "Select Year for Price Trends:",
+            options=year_options,
+            index=default_index,
+            key="price_trends_year_filter"
+        )
+    
+    with col2_filter:
+        # Use CSS to align the info message to the bottom
+        if selected_year != "All Years":
+            info_message = f"📅 Showing price trends for **{selected_year}** only. Switch to 'All Years' for complete trend analysis."
+        else:
+            info_message = f"📅 Showing price trends for **all available years** ({min(available_years)}-{max(available_years)})"
+        
+        # Create a container with bottom alignment
+        st.markdown(f"""
+        <div style="
+            height: 80px; 
+            display: flex; 
+            align-items: flex-end; 
+            padding-bottom: 8px;
+            margin-top: -10px;
+        ">
+            <div style="
+                background-color: transparent; 
+                border: 1px solid transparent; 
+                border-radius: 0.375rem; 
+                padding: 0.75rem; 
+                color: #cc9966;
+                width: 100%;
+                font-size: 0.875rem;
+            ">
+                {info_message}
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Filter data based on selected year
+    if selected_year == "All Years":
+        filtered_df = df
+        year_suffix = " (All Years)"
+    else:
+        filtered_df = df[df['year'] == int(selected_year)]
+        year_suffix = f" ({selected_year})"
+    
+    # Check if data is available for the selected year
+    if len(filtered_df) == 0:
+        st.warning(f"⚠️ No data available for {selected_year}")
+        return
+    
     # Monthly average price trend
-    monthly_avg = df.groupby('month')['resale_price'].mean().reset_index()
+    monthly_avg = filtered_df.groupby('month')['resale_price'].mean().reset_index()
     
     fig = px.line(
         monthly_avg,
         x='month',
         y='resale_price',
-        title='Monthly Average Resale Price Trend',
+        title=f'Monthly Average Resale Price Trend{year_suffix}',
         labels={'resale_price': 'Average Resale Price (S$)', 'month': 'Month'}
     )
     fig.update_layout(height=500)
@@ -332,13 +393,13 @@ def create_price_trends(df):
     col1, col2 = st.columns(2)
     
     with col1:
-        flat_type_trends = df.groupby(['month', 'flat_type'])['resale_price'].mean().reset_index()
+        flat_type_trends = filtered_df.groupby(['month', 'flat_type'])['resale_price'].mean().reset_index()
         fig = px.line(
             flat_type_trends,
             x='month',
             y='resale_price',
             color='flat_type',
-            title='Price Trends by Flat Type',
+            title=f'Price Trends by Flat Type{year_suffix}',
             labels={'resale_price': 'Average Resale Price (S$)', 'month': 'Month'}
         )
         fig.update_layout(height=400)
@@ -348,10 +409,10 @@ def create_price_trends(df):
     with col2:
         # Price distribution by flat type
         fig = px.box(
-            df,
+            filtered_df,
             x='flat_type',
             y='resale_price',
-            title='Price Distribution by Flat Type'
+            title=f'Price Distribution by Flat Type{year_suffix}'
         )
         fig.update_layout(height=400, xaxis_tickangle=-45)
         fig.update_traces(hovertemplate='<b>%{x}</b><br>Price: S$%{y:,.0f}<extra></extra>')
@@ -361,17 +422,78 @@ def create_geographic_analysis(df):
     """Create geographic analysis visualizations."""
     st.subheader("🗺️ Geographic Analysis")
     
+    # Year selector for Geographic Analysis
+    col1_filter, col2_filter = st.columns([1, 3])
+    with col1_filter:
+        available_years = sorted(df['year'].unique(), reverse=True)
+        year_options = ["All Years"] + [str(year) for year in available_years]
+        
+        # Set default to 2025 if available, otherwise "All Years"
+        default_index = 0  # Default to "All Years"
+        if "2025" in year_options:
+            default_index = year_options.index("2025")
+        
+        selected_year = st.selectbox(
+            "Select Year for Geographic Analysis:",
+            options=year_options,
+            index=default_index,
+            key="geo_year_filter"
+        )
+    
+    with col2_filter:
+        # Use CSS to align the info message to the bottom
+        if selected_year != "All Years":
+            info_message = f"📅 Showing geographic analysis for **{selected_year}** only. Switch to 'All Years' for complete analysis."
+        else:
+            info_message = f"📅 Showing geographic analysis for **all available years** ({min(available_years)}-{max(available_years)})"
+        
+        # Create a container with bottom alignment
+        st.markdown(f"""
+        <div style="
+            height: 80px; 
+            display: flex; 
+            align-items: flex-end; 
+            padding-bottom: 8px;
+            margin-top: -10px;
+        ">
+            <div style="
+                background-color: transparent; 
+                border: 1px solid transparent; 
+                border-radius: 0.375rem; 
+                padding: 0.75rem; 
+                color: #cc9966;
+                width: 100%;
+                font-size: 0.875rem;
+            ">
+                {info_message}
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Filter data based on selected year
+    if selected_year == "All Years":
+        filtered_df = df
+        year_suffix = " (All Years)"
+    else:
+        filtered_df = df[df['year'] == int(selected_year)]
+        year_suffix = f" ({selected_year})"
+    
+    # Check if data is available for the selected year
+    if len(filtered_df) == 0:
+        st.warning(f"⚠️ No data available for {selected_year}")
+        return
+    
     col1, col2 = st.columns(2)
     
     with col1:
         # Average price by town
-        town_avg = df.groupby('town')['resale_price'].mean().sort_values(ascending=False).head(15)
+        town_avg = filtered_df.groupby('town')['resale_price'].mean().sort_values(ascending=False).head(15)
         
         fig = px.bar(
             x=town_avg.values,
             y=town_avg.index,
             orientation='h',
-            title='Top 15 Towns by Average Resale Price',
+            title=f'Top 15 Towns by Average Resale Price{year_suffix}',
             labels={'x': 'Average Resale Price (S$)', 'y': 'Town'}
         )
         fig.update_layout(height=500)
@@ -380,13 +502,13 @@ def create_geographic_analysis(df):
     
     with col2:
         # Transaction volume by town
-        town_volume = df['town'].value_counts().head(15)
+        town_volume = filtered_df['town'].value_counts().head(15)
         
         fig = px.bar(
             x=town_volume.values,
             y=town_volume.index,
             orientation='h',
-            title='Top 15 Towns by Transaction Volume',
+            title=f'Top 15 Towns by Transaction Volume{year_suffix}',
             labels={'x': 'Number of Transactions', 'y': 'Town'}
         )
         fig.update_layout(height=500)
@@ -396,17 +518,78 @@ def create_flat_analysis(df):
     """Create flat-specific analysis."""
     st.subheader("🏢 Flat Analysis")
     
+    # Year selector for Flat Analysis
+    col1_filter, col2_filter = st.columns([1, 3])
+    with col1_filter:
+        available_years = sorted(df['year'].unique(), reverse=True)
+        year_options = ["All Years"] + [str(year) for year in available_years]
+        
+        # Set default to 2025 if available, otherwise "All Years"
+        default_index = 0  # Default to "All Years"
+        if "2025" in year_options:
+            default_index = year_options.index("2025")
+        
+        selected_year = st.selectbox(
+            "Select Year for Flat Analysis:",
+            options=year_options,
+            index=default_index,
+            key="flat_analysis_year_filter"
+        )
+    
+    with col2_filter:
+        # Use CSS to align the info message to the bottom
+        if selected_year != "All Years":
+            info_message = f"📅 Showing flat analysis for **{selected_year}** only. Switch to 'All Years' for complete analysis."
+        else:
+            info_message = f"📅 Showing flat analysis for **all available years** ({min(available_years)}-{max(available_years)})"
+        
+        # Create a container with bottom alignment
+        st.markdown(f"""
+        <div style="
+            height: 80px; 
+            display: flex; 
+            align-items: flex-end; 
+            padding-bottom: 8px;
+            margin-top: -10px;
+        ">
+            <div style="
+                background-color: transparent; 
+                border: 1px solid transparent; 
+                border-radius: 0.375rem; 
+                padding: 0.75rem; 
+                color: #cc9966;
+                width: 100%;
+                font-size: 0.875rem;
+            ">
+                {info_message}
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Filter data based on selected year
+    if selected_year == "All Years":
+        filtered_df = df
+        year_suffix = " (All Years)"
+    else:
+        filtered_df = df[df['year'] == int(selected_year)]
+        year_suffix = f" ({selected_year})"
+    
+    # Check if data is available for the selected year
+    if len(filtered_df) == 0:
+        st.warning(f"⚠️ No data available for {selected_year}")
+        return
+    
     col1, col2 = st.columns(2)
     
     with col1:
         # Price vs Floor Area
-        sample_df = df.sample(n=min(5000, len(df)))  # Sample for performance
+        sample_df = filtered_df.sample(n=min(5000, len(filtered_df)))  # Sample for performance
         fig = px.scatter(
             sample_df,
             x='floor_area_sqm',
             y='resale_price',
             color='flat_type',
-            title='Resale Price vs Floor Area',
+            title=f'Resale Price vs Floor Area{year_suffix}',
             labels={'floor_area_sqm': 'Floor Area (sqm)', 'resale_price': 'Resale Price (S$)'}
         )
         fig.update_layout(height=400)
@@ -420,7 +603,7 @@ def create_flat_analysis(df):
             x='flat_age',
             y='resale_price',
             color='flat_type',
-            title='Resale Price vs Flat Age',
+            title=f'Resale Price vs Flat Age{year_suffix}',
             labels={'flat_age': 'Flat Age (years)', 'resale_price': 'Resale Price (S$)'}
         )
         fig.update_layout(height=400)
@@ -431,33 +614,104 @@ def create_market_insights(df):
     """Create market insights and statistics."""
     st.subheader("💡 Market Insights")
     
-    # Calculate year-over-year changes
-    yearly_avg = df.groupby('year')['resale_price'].mean()
-    yoy_change = yearly_avg.pct_change().iloc[-1] * 100
+    # Year selector for Market Insights
+    col1_filter, col2_filter = st.columns([1, 3])
+    with col1_filter:
+        available_years = sorted(df['year'].unique(), reverse=True)
+        year_options = ["All Years"] + [str(year) for year in available_years]
+        
+        # Set default to 2025 if available, otherwise "All Years"
+        default_index = 0  # Default to "All Years"
+        if "2025" in year_options:
+            default_index = year_options.index("2025")
+        
+        selected_year = st.selectbox(
+            "Select Year for Market Insights:",
+            options=year_options,
+            index=default_index,
+            key="market_insights_year_filter"
+        )
+    
+    with col2_filter:
+        # Use CSS to align the info message to the bottom
+        if selected_year != "All Years":
+            info_message = f"📅 Showing market insights for **{selected_year}** only. Switch to 'All Years' for complete market analysis."
+        else:
+            info_message = f"📅 Showing market insights for **all available years** ({min(available_years)}-{max(available_years)})"
+        
+        # Create a container with bottom alignment
+        st.markdown(f"""
+        <div style="
+            height: 80px; 
+            display: flex; 
+            align-items: flex-end; 
+            padding-bottom: 8px;
+            margin-top: -10px;
+        ">
+            <div style="
+                background-color: transparent; 
+                border: 1px solid transparent; 
+                border-radius: 0.375rem; 
+                padding: 0.75rem; 
+                color: #cc9966;
+                width: 100%;
+                font-size: 0.875rem;
+            ">
+                {info_message}
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Filter data based on selected year
+    if selected_year == "All Years":
+        filtered_df = df
+        year_suffix = " (All Years)"
+    else:
+        filtered_df = df[df['year'] == int(selected_year)]
+        year_suffix = f" ({selected_year})"
+    
+    # Check if data is available for the selected year
+    if len(filtered_df) == 0:
+        st.warning(f"⚠️ No data available for {selected_year}")
+        return
+    
+    # Calculate year-over-year changes (only for All Years view)
+    if selected_year == "All Years":
+        yearly_avg = df.groupby('year')['resale_price'].mean()
+        yoy_change = yearly_avg.pct_change().iloc[-1] * 100
+    else:
+        # For specific year, show comparison with previous year if available
+        current_year_data = filtered_df['resale_price'].mean()
+        prev_year = int(selected_year) - 1
+        prev_year_data = df[df['year'] == prev_year]['resale_price'].mean() if prev_year in df['year'].values else None
+        if prev_year_data:
+            yoy_change = ((current_year_data - prev_year_data) / prev_year_data) * 100
+        else:
+            yoy_change = 0
     
     col1, col2, col3 = st.columns(3)
     
     with col1:
         st.metric(
-            label="YoY Price Change",
+            label=f"YoY Price Change{year_suffix}",
             value=f"{yoy_change:+.1f}%",
             delta=f"{yoy_change:+.1f}%"
         )
     
     with col2:
-        most_expensive_town = df.groupby('town')['resale_price'].mean().idxmax()
-        most_expensive_price = df.groupby('town')['resale_price'].mean().max()
+        most_expensive_town = filtered_df.groupby('town')['resale_price'].mean().idxmax()
+        most_expensive_price = filtered_df.groupby('town')['resale_price'].mean().max()
         st.metric(
-            label="Most Expensive Town",
+            label=f"Most Expensive Town{year_suffix}",
             value=most_expensive_town,
             delta=f"S${most_expensive_price:,.0f}"
         )
     
     with col3:
-        most_active_town = df['town'].value_counts().idxmax()
-        most_active_count = df['town'].value_counts().iloc[0]
+        most_active_town = filtered_df['town'].value_counts().idxmax()
+        most_active_count = filtered_df['town'].value_counts().iloc[0]
         st.metric(
-            label="Most Active Town",
+            label=f"Most Active Town{year_suffix}",
             value=most_active_town,
             delta=f"{most_active_count:,} transactions"
         )
@@ -465,33 +719,42 @@ def create_market_insights(df):
     # Market summary
     st.write("### 📊 Market Summary")
     
-    # Recent trends (last 12 months)
-    recent_data = df[df['month'] >= (df['month'].max() - pd.DateOffset(months=12))]
+    # Recent trends - adjust based on selected year
+    if selected_year == "All Years":
+        # Recent trends (last 12 months)
+        recent_data = df[df['month'] >= (df['month'].max() - pd.DateOffset(months=12))]
+        trend_title = "Recent Price Trends (Last 12 Months)"
+        flat_type_title = "Popular Flat Types (Last 12 Months)"
+    else:
+        # Use the entire selected year
+        recent_data = filtered_df
+        trend_title = f"Price Trends for {selected_year}"
+        flat_type_title = f"Popular Flat Types in {selected_year}"
     
     if len(recent_data) > 0:
         col1, col2 = st.columns(2)
         
         with col1:
-            st.write("**Recent Price Trends (Last 12 Months)**")
+            st.write(f"**{trend_title}**")
             recent_monthly = recent_data.groupby('month')['resale_price'].mean()
             
             fig = px.line(
                 x=recent_monthly.index,
                 y=recent_monthly.values,
-                title='Recent Monthly Price Trend'
+                title=trend_title
             )
             fig.update_layout(height=300)
             fig.update_traces(hovertemplate='<b>%{x}</b><br>Price: S$%{y:,.0f}<extra></extra>')
             st.plotly_chart(fig, use_container_width=True)
         
         with col2:
-            st.write("**Popular Flat Types (Last 12 Months)**")
+            st.write(f"**{flat_type_title}**")
             recent_flat_types = recent_data['flat_type'].value_counts()
             
             fig = px.pie(
                 values=recent_flat_types.values,
                 names=recent_flat_types.index,
-                title='Transaction Distribution by Flat Type'
+                title=flat_type_title
             )
             fig.update_layout(height=300)
             st.plotly_chart(fig, use_container_width=True)
@@ -499,6 +762,22 @@ def create_market_insights(df):
 def create_data_explorer(df):
     """Create interactive data explorer."""
     st.subheader("🔍 Data Explorer")
+    
+    # Year filter
+    available_years = sorted(df['month'].dt.year.unique(), reverse=True)
+    selected_year = st.selectbox(
+        "Filter by Year:",
+        options=['All Years'] + available_years,
+        index=1,  # Default to first year (2025)
+        key="data_explorer_year_filter"
+    )
+    
+    # Apply year filter
+    if selected_year != 'All Years':
+        df = df[df['month'].dt.year == selected_year]
+        year_suffix = f" ({selected_year})"
+    else:
+        year_suffix = " (All Years)"
     
     # Filters
     col1, col2, col3, col4 = st.columns(4)
@@ -569,17 +848,18 @@ def create_data_explorer(df):
     ]
     
     if len(filtered_df) > 0:
-        st.write(f"**Filtered Results: {len(filtered_df):,} transactions**")
+        st.write(f"**Filtered Results{year_suffix}: {len(filtered_df):,} transactions**")
         
         # Display sample data
-        st.write("### Sample Data")
+        st.write(f"### Sample Data{year_suffix}")
         
         # Download option - moved to top left after Sample Data heading
         csv = filtered_df.to_csv(index=False)
+        filename_suffix = f"_{selected_year}" if selected_year != 'All Years' else "_all_years"
         st.download_button(
             label="📥 Download Filtered Data as CSV",
             data=csv,
-            file_name=f"filtered_resale_data_{datetime.now().strftime('%Y%m%d')}.csv",
+            file_name=f"filtered_resale_data{filename_suffix}_{datetime.now().strftime('%Y%m%d')}.csv",
             mime="text/csv"
         )
         
@@ -801,8 +1081,14 @@ def create_data_explorer(df):
         observer.observe(document.body, { childList: true, subtree: true });
         </script>
         """, unsafe_allow_html=True)
+        
+        # Year filter info
+        st.markdown(
+            f'<div style="text-align: right; color: #666; font-size: 0.9em; margin-top: 10px;">Showing data for {selected_year if selected_year != "All Years" else "all years"}</div>',
+            unsafe_allow_html=True
+        )
     else:
-        st.warning("No data matches the selected filters.")
+        st.warning(f"No data matches the selected filters{year_suffix.lower()}.")
 
 def main():
     """Main Streamlit application."""
