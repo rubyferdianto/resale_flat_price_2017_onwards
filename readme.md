@@ -1,120 +1,150 @@
 # Singapore Resale Flat Price Analysis Dashboard
 
-## 📊 Project Overview
+## 📊 Overview
 
-A comprehensive, production-ready Streamlit dashboard for analyzing Singapore### 🔄 Smart Data Management Features
-- **Intelligent Refresh System**: Month-based detection preventing unnecessary API calls
-  - **Data Behind**: Shows "Data Update Available" with## 🎯 Use Cases
-
-- **Real Estate Analysis**: Market trends and pricing insights with comprehensive year-based filtering
-- **Investment Research**: Geographic and temporal price patterns with intelligent data management
-- **Academic Research**: Housing market data analysis with complete dataset visibility
-- **Government Planning**: Policy impact assessment with sophisticated temporal analysis
-- **Business Intelligence**: Market positioning and strategy with smart data refresh capabilities
-- **Monthly Reporting**: Automated data freshness detection for regular market updates
-
-## 🚀 Future Enhancements
-
-- [ ] Machine learning price predictions with historical trend analysis
-- [ ] Mobile-responsive design for tablet and phone access
-- [ ] Real-time data streaming with automatic refresh notifications
-- [ ] Advanced statistical models and correlation analysis
-- [ ] Export to multiple formats (Excel, PDF) with preserved formatting
-- [ ] User authentication and saved filter preferences
-- [ ] Email notifications for data updates and market alerts
-- [ ] Interactive map visualization with geographic clustering
-
-## 🛠️ Development Notesbility
-  - **Data Current**: Shows "Data Management" with educational warnings about HDB monthly update cycles
-  - **Smart Warnings**: Prevents resource waste when data is already current for the month
-- **Month-based Logic**: Sophisticated calculation using year/month arithmetic
-- **User Education**: Clear messaging about optimal refresh timing and HDB data release patterns
-- **Progress Tracking**: Real-time status during data fetching with comprehensive error handling
-- **Auto-reload**: Automatic page refresh after successful data update
-
-### 📅 Comprehensive Year Filtering
-- **Universal Coverage**: All 6 dashboard sections support year-specific analysis
-- **Default to Current**: 2025 selected by default for immediate relevance
-- **Consistent UI**: Uniform year selector design across all analysis sections
-- **Adaptive Analytics**: Market insights adjust methodology based on selected time period
-- **Data Availability Checks**: Clear warnings when no data exists for selected year
-
-### 🗺️ Geographic & Market Analysis
-- **Town Comparisons**: Top 15 towns by price and transaction volume with year filtering
-- **Price Trends**: Monthly trends by flat type with interactive charts and year filtering
-- **Market Insights**: YoY changes, market leaders, recent trends with adaptive year-based analytics
-- **Correlation Analysis**: Price vs area, age relationships with year filteringrices using official data from data.gov.sg. This interactive web application provides deep insights into housing market trends, geographic patterns, and statistical analysis with advanced data exploration capabilities and intelligent data management.
+An interactive Streamlit dashboard for analyzing Singapore resale flat prices using official data from data.gov.sg. Provides comprehensive insights into housing market trends, geographic patterns, and statistical analysis with intelligent data management.
 
 ## ✨ Key Features
 
-### 🎯 Core Functionality
-- **Real-time Data Integration**: Direct connection to Singapore's official data.gov.sg API
-- **Performance Optimized**: Smart caching system with CSV storage (1.44x faster than direct API calls)
-- **Comprehensive Dashboard**: 6 analysis sections with interactive visualizations
-- **Advanced Data Explorer**: Multi-level sorting, pagination, and powerful filtering with complete column visibility
-- **Intelligent Data Refresh**: Smart month-based detection system preventing unnecessary API calls
-
-### 📈 Analysis Sections
-1. **Overview**: Dataset metrics, price statistics, and floor area analysis with year filtering
-2. **Price Trends**: Monthly trends, flat type comparisons, and distribution analysis with year filtering
-3. **Geographic Analysis**: Town-wise price analysis and transaction volumes with year filtering
-4. **Flat Analysis**: Price vs area/age correlations with scatter plots and year filtering
-5. **Market Insights**: YoY changes, market leaders, and recent trends with adaptive year-based analytics
-6. **Data Explorer**: Interactive filtering, sorting, data export, and complete column display with year filtering
-
-### 🎨 User Experience
-- **Professional UI**: Custom styling with optimized table layouts and red-themed headers
-- **Smart Data Formatting**: Currency formatting, number alignment, and intuitive displays
-- **Responsive Design**: Optimized for desktop viewing with proper column alignment
-- **Export Functionality**: Download filtered data as CSV for further analysis
-- **Year-based Filtering**: Comprehensive temporal analysis across all dashboard sections
-- **Smart Refresh Management**: Intelligent system that detects data freshness and guides users on optimal refresh timing
-
-## 📋 Prerequisites
-
-- Python 3.9 or higher
-- Conda package manager (recommended) or pip
-- Internet connection for API access
-- 8GB+ RAM recommended for large dataset processing
+- **Real-time Data**: Direct connection to Singapore's official data.gov.sg API
+- **Smart Caching**: Performance-optimized with CSV storage (1.44x faster than API calls)
+- **6 Analysis Sections**: Overview, Price Trends, Geographic Analysis, Flat Analysis, Market Insights, Data Explorer
+- **Year Filtering**: Comprehensive temporal analysis across all sections (defaults to 2025)
+- **Interactive Maps**: Geographic visualization with exact table record synchronization
+- **Data Export**: Download filtered results as CSV
+- **Smart Refresh**: Intelligent system prevents unnecessary API calls
 
 ## 🚀 Quick Start
 
 ### 1. Installation
 ```bash
-# Clone or download the project
-# Navigate to project directory
-
-# Create and activate conda environment (if available)
-conda env create -f environment.yml
-conda activate resale-flat-analysis
-
-# OR create virtual environment with pip
+# Create virtual environment
 python3 -m venv .venv
 source .venv/bin/activate  # On macOS/Linux
 # .venv\Scripts\activate   # On Windows
+
+# Install dependencies
 pip install -r requirements.txt
 ```
 
 ### 2. Run the Dashboard
-
-**Option A: Using the startup script (Recommended)**
 ```bash
+# Using startup script (recommended)
 ./run_dashboard.sh
-```
 
-**Option B: Manual activation**
-```bash
-# Activate your environment first
-source .venv/bin/activate  # For venv
-# OR
-conda activate resale-flat-analysis  # For conda
-
-# Then run Streamlit
+# OR manually
+source .venv/bin/activate
 streamlit run streamlit_app.py
 ```
 
-### 3. Access the Application
-Open your browser and navigate to: `http://localhost:8501`
+### 3. Access
+Open your browser: `http://localhost:8501`
+
+## 🎮 Dashboard Sections
+
+### 📊 Overview
+- Dataset metrics and statistics
+- Price and floor area analysis
+- Year-based filtering
+
+### 📈 Price Trends
+- Monthly price trends
+- Flat type comparisons
+- Interactive charts
+
+### 🗺️ Geographic Analysis
+- Town-wise price analysis
+- Transaction volume mapping
+- Top performers by region
+
+### 🏢 Flat Analysis
+- Price vs floor area correlations
+- Age impact analysis
+- Scatter plot visualizations
+
+### 💡 Market Insights
+- Year-over-year changes
+- Market leaders identification
+- Recent trend analysis
+
+### 🔍 Data Explorer
+- Interactive filtering (town, flat type, month, price range)
+- 15 records per page with pagination
+- Interactive map showing exact table records
+- Multi-level sorting options
+- CSV export functionality
+
+## 🗺️ Map Visualization
+
+The Data Explorer includes an interactive map that displays exactly the same records shown in the table:
+- **Synchronized Data**: Map shows the exact 15 records from the current table page
+- **Dynamic Updates**: Changes with pagination, sorting, and filtering
+- **Geographic Context**: OpenStreetMap with price-based color coding and size scaling
+- **Rich Hover Information**: Detailed property information on hover
+
+## �️ Technical Details
+
+### Data Management
+- **Source**: Singapore data.gov.sg API (212K+ records from 2017-2025)
+- **Caching**: Local CSV storage with metadata tracking
+- **Refresh Logic**: Month-based detection system
+- **Performance**: Strategic sampling for large visualizations
+
+### Project Structure
+```
+├── streamlit_app.py         # Main dashboard (1400+ lines)
+├── data_fetcher.py          # API integration and caching
+├── run_dashboard.sh         # Startup script
+├── requirements.txt         # Dependencies
+├── resale_flat_data.csv     # Cached dataset (auto-generated)
+└── data_metadata.json      # Metadata (auto-generated)
+```
+
+## � Troubleshooting
+
+### Common Issues
+
+1. **"Failed to load data" Error**
+   ```bash
+   # Solution: Use startup script
+   ./run_dashboard.sh
+   
+   # OR activate environment manually
+   source .venv/bin/activate
+   streamlit run streamlit_app.py
+   ```
+
+2. **Environment Issues**
+   ```bash
+   # For externally-managed-environment error
+   python3 -m venv .venv
+   source .venv/bin/activate
+   pip install -r requirements.txt
+   ```
+
+3. **Data Loading Issues**
+   - Ensure environment is activated
+   - Check internet connection
+   - Delete CSV files to force fresh API fetch
+
+## 📈 Data Source
+
+- **API**: https://data.gov.sg/api/action/datastore_search
+- **Dataset**: Singapore HDB Resale Flat Prices (2017 onwards)
+- **Update Frequency**: Monthly
+- **Records**: 212K+ transactions
+
+## 🙏 Acknowledgments
+
+- **Data.gov.sg**: Official Singapore government data portal
+- **HDB Singapore**: Housing & Development Board
+- **Streamlit Community**: Framework and documentation
+
+---
+
+**Built with ❤️ using Streamlit and Singapore's Open Data Initiative**
+
+*Last updated: August 2025*
 
 ## 🚨 Troubleshooting
 
@@ -351,29 +381,6 @@ dependencies:
   - requests>=2.28
 ```
 
-## 🎯 Use Cases
-
-- **Real Estate Analysis**: Market trends and pricing insights
-- **Investment Research**: Geographic and temporal price patterns  
-- **Academic Research**: Housing market data analysis
-- **Government Planning**: Policy impact assessment
-- **Business Intelligence**: Market positioning and strategy
-
-## 🚀 Future Enhancements
-
-- [ ] Machine learning price predictions
-- [ ] Mobile-responsive design
-- [ ] Real-time data streaming
-- [ ] Advanced statistical models
-- [ ] Export to multiple formats (Excel, PDF)
-- [ ] User authentication and saved filters
-
-## 📞 Support & Contact
-
-- **GitHub**: [rubyferdianto/resale_flat_price_2017_onwards](https://github.com/rubyferdianto)
-- **Documentation**: Comprehensive inline code documentation
-- **Issues**: GitHub Issues for bug reports and feature requests
-
 ## 🙏 Acknowledgments
 
 - **Data.gov.sg**: Official Singapore government data portal
@@ -545,14 +552,7 @@ For questions or support, please contact:
 
 ---
 
-**Last Updated**: August 2025 | **Version**: 2.1.0 - Data Refresh Feature Ready
-- ✅ **Month Filter**: Added month selection filter for time-based data analysis with reverse chronological order
-- ✅ **Smart Number Display**: Floor area shows as integers when appropriate (85.0 → 85)
-- ✅ **Enhanced Date Format**: Month column displays in readable Jan-2017 format
-- ✅ **Red Column Headers**: Bold red headers for enhanced visual hierarchy and professional appearance
-- ✅ **Enhanced Price Range Slider**: S$ formatting with real-time range display and comma separators
-
----
+**Built with ❤️ using Streamlit and Singapore's Open Data Initiative**
 
 *Last updated: August 2025*
 

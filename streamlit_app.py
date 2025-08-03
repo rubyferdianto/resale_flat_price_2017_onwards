@@ -30,29 +30,9 @@ st.markdown("""
         font-size: 3rem;
         color: #1f77b4;
         text-align: center;
-        margin-bottom: 2re        with col1:
-            if st.button("✅ Continue", key="confirm_refresh"):
-                st.session_state.show_refresh_warning = False
-                
-                # Show refresh process in main area
-                st.info("🚀 **Data refresh started** - Please wait while we fetch the latest data...")
-                
-                refresh_placeholder = st.empty()
-                with refresh_placeholder:
-                    if refresh_data_from_api():
-                        st.success("✅ **Data refreshed successfully!**")
-                        st.info("🔄 The page will automatically reload with updated data.")
-                        st.balloons()
-                        # Auto-refresh after showing success message
-                        time.sleep(2)
-                        st.rerun()
-                    else:
-                        st.error("❌ **Data refresh failed.** Please check your internet connection and try again.")
-        
-        with col2:
-            if st.button("❌ Cancel", key="cancel_refresh"):
-                st.session_state.show_refresh_warning = False
-                st.rerun().metric-card {
+        margin-bottom: 2rem;
+    }
+    .metric-card {
         background-color: #f0f2f6;
         padding: 1rem;
         border-radius: 0.5rem;
@@ -106,9 +86,6 @@ def load_data():
                 st.error("Failed to fetch data from API")
                 return None
         
-        # Show initial data info
-        st.sidebar.info(f"📊 Raw data loaded: {len(df):,} records")
-        
         # Data preprocessing
         if df is not None:
             try:
@@ -138,9 +115,6 @@ def load_data():
                 original_count = len(df)
                 df = df.dropna(subset=['resale_price', 'floor_area_sqm', 'month'])
                 cleaned_count = len(df)
-                
-                if original_count != cleaned_count:
-                    st.sidebar.info(f"🧹 Cleaned data: {cleaned_count:,} records ({original_count - cleaned_count:,} removed)")
                 
                 return df
                 
@@ -237,27 +211,34 @@ def get_data_freshness_info():
         }
     except:
         return None
-        
-        # Convert resale_price to numeric
-        df['resale_price'] = pd.to_numeric(df['resale_price'], errors='coerce')
-        
-        # Convert floor_area_sqm to numeric
-        df['floor_area_sqm'] = pd.to_numeric(df['floor_area_sqm'], errors='coerce')
-        
-        # Calculate price per sqm
-        df['price_per_sqm'] = df['resale_price'] / df['floor_area_sqm']
-        
-        # Extract year from month
-        df['year'] = df['month'].dt.year
-        
-        # Clean up lease_commence_date
-        df['lease_commence_date'] = pd.to_numeric(df['lease_commence_date'], errors='coerce')
-        
-        # Calculate flat age
-        current_year = datetime.now().year
-        df['flat_age'] = current_year - df['lease_commence_date']
-        
-    return df
+
+def update_sidebar_data_info(data_info_placeholder, df, selected_year="All Years"):
+    """Update the sidebar data information based on selected year."""
+    # Filter data based on selected year
+    if selected_year == "All Years":
+        filtered_df = df
+        year_suffix = " (All Years)"
+    else:
+        try:
+            filtered_df = df[df['year'] == int(selected_year)]
+            year_suffix = f" ({selected_year})"
+        except:
+            filtered_df = df
+            year_suffix = " (All Years)"
+    
+    # Update session state
+    st.session_state.current_selected_year = selected_year
+    
+    # Update the data information
+    with data_info_placeholder.container():
+        if len(filtered_df) > 0:
+            st.write(f"**Total Records:** {len(filtered_df):,}{year_suffix}")
+            st.write(f"**Date Range:** {filtered_df['month'].min().strftime('%Y-%m')} to {filtered_df['month'].max().strftime('%Y-%m')}")
+            st.write(f"**Towns:** {filtered_df['town'].nunique()}")
+            st.write(f"**Flat Types:** {filtered_df['flat_type'].nunique()}")
+        else:
+            st.write(f"**No data available for {selected_year}**")
+            st.write("Please select a different year.")
 
 def create_overview_metrics(df, year=None):
     """Create overview metrics for the dashboard."""
@@ -310,7 +291,7 @@ def create_overview_metrics(df, year=None):
             value=date_range
         )
 
-def create_price_trends(df):
+def create_price_trends(df, data_info_placeholder=None):
     """Create price trend visualizations."""
     st.subheader("📈 Price Trends Analysis")
     
@@ -331,6 +312,10 @@ def create_price_trends(df):
             index=default_index,
             key="price_trends_year_filter"
         )
+        
+        # Update sidebar data information when year changes
+        if data_info_placeholder:
+            update_sidebar_data_info(data_info_placeholder, df, selected_year)
     
     with col2_filter:
         # Use CSS to align the info message to the bottom
@@ -418,7 +403,7 @@ def create_price_trends(df):
         fig.update_traces(hovertemplate='<b>%{x}</b><br>Price: S$%{y:,.0f}<extra></extra>')
         st.plotly_chart(fig, use_container_width=True)
 
-def create_geographic_analysis(df):
+def create_geographic_analysis(df, data_info_placeholder=None):
     """Create geographic analysis visualizations."""
     st.subheader("🗺️ Geographic Analysis")
     
@@ -439,6 +424,10 @@ def create_geographic_analysis(df):
             index=default_index,
             key="geo_year_filter"
         )
+        
+        # Update sidebar data information when year changes
+        if data_info_placeholder:
+            update_sidebar_data_info(data_info_placeholder, df, selected_year)
     
     with col2_filter:
         # Use CSS to align the info message to the bottom
@@ -514,7 +503,7 @@ def create_geographic_analysis(df):
         fig.update_layout(height=500)
         st.plotly_chart(fig, use_container_width=True)
 
-def create_flat_analysis(df):
+def create_flat_analysis(df, data_info_placeholder=None):
     """Create flat-specific analysis."""
     st.subheader("🏢 Flat Analysis")
     
@@ -535,6 +524,10 @@ def create_flat_analysis(df):
             index=default_index,
             key="flat_analysis_year_filter"
         )
+        
+        # Update sidebar data information when year changes
+        if data_info_placeholder:
+            update_sidebar_data_info(data_info_placeholder, df, selected_year)
     
     with col2_filter:
         # Use CSS to align the info message to the bottom
@@ -610,7 +603,7 @@ def create_flat_analysis(df):
         fig.update_traces(hovertemplate='<b>%{fullData.name}</b><br>Age: %{x} years<br>Price: S$%{y:,.0f}<extra></extra>')
         st.plotly_chart(fig, use_container_width=True)
 
-def create_market_insights(df):
+def create_market_insights(df, data_info_placeholder=None):
     """Create market insights and statistics."""
     st.subheader("💡 Market Insights")
     
@@ -631,6 +624,10 @@ def create_market_insights(df):
             index=default_index,
             key="market_insights_year_filter"
         )
+        
+        # Update sidebar data information when year changes
+        if data_info_placeholder:
+            update_sidebar_data_info(data_info_placeholder, df, selected_year)
     
     with col2_filter:
         # Use CSS to align the info message to the bottom
@@ -735,7 +732,6 @@ def create_market_insights(df):
         col1, col2 = st.columns(2)
         
         with col1:
-            st.write(f"**{trend_title}**")
             recent_monthly = recent_data.groupby('month')['resale_price'].mean()
             
             fig = px.line(
@@ -748,7 +744,6 @@ def create_market_insights(df):
             st.plotly_chart(fig, use_container_width=True)
         
         with col2:
-            st.write(f"**{flat_type_title}**")
             recent_flat_types = recent_data['flat_type'].value_counts()
             
             fig = px.pie(
@@ -759,7 +754,7 @@ def create_market_insights(df):
             fig.update_layout(height=300)
             st.plotly_chart(fig, use_container_width=True)
 
-def create_data_explorer(df):
+def create_data_explorer(df, data_info_placeholder=None):
     """Create interactive data explorer."""
     st.subheader("🔍 Data Explorer")
     
@@ -771,6 +766,10 @@ def create_data_explorer(df):
         index=1,  # Default to first year (2025)
         key="data_explorer_year_filter"
     )
+    
+    # Update sidebar data information when year changes
+    if data_info_placeholder:
+        update_sidebar_data_info(data_info_placeholder, df, selected_year)
     
     # Apply year filter
     if selected_year != 'All Years':
@@ -891,7 +890,7 @@ def create_data_explorer(df):
         
         with col3:
             # Calculate total pages
-            records_per_page = 50
+            records_per_page = 15
             total_records = len(filtered_df)
             total_pages = (total_records - 1) // records_per_page + 1 if total_records > 0 else 1
             
@@ -1087,6 +1086,89 @@ def create_data_explorer(df):
             f'<div style="text-align: right; color: #666; font-size: 0.9em; margin-top: 10px;">Showing data for {selected_year if selected_year != "All Years" else "all years"}</div>',
             unsafe_allow_html=True
         )
+        
+        # Map visualization with displayed table records - moved to bottom
+        st.write(f"### 🗺️ Map Explorer (Showing Table Records)")
+        
+        # Use the same paginated and sorted data that's displayed in the table
+        map_data = sorted_df.iloc[start_idx:end_idx].copy()
+        
+        # Create approximate coordinates for Singapore towns (you can enhance this with actual geocoding)
+        town_coordinates = {
+            'ANG MO KIO': {'lat': 1.3691, 'lon': 103.8454},
+            'BEDOK': {'lat': 1.3236, 'lon': 103.9273},
+            'BISHAN': {'lat': 1.3506, 'lon': 103.8484},
+            'BUKIT BATOK': {'lat': 1.3587, 'lon': 103.7454},
+            'BUKIT MERAH': {'lat': 1.2797, 'lon': 103.8120},
+            'BUKIT PANJANG': {'lat': 1.3774, 'lon': 103.7718},
+            'BUKIT TIMAH': {'lat': 1.3294, 'lon': 103.8008},
+            'CENTRAL AREA': {'lat': 1.2867, 'lon': 103.8545},
+            'CHOA CHU KANG': {'lat': 1.3840, 'lon': 103.7470},
+            'CLEMENTI': {'lat': 1.3162, 'lon': 103.7649},
+            'GEYLANG': {'lat': 1.3201, 'lon': 103.8918},
+            'HOUGANG': {'lat': 1.3613, 'lon': 103.8936},
+            'JURONG EAST': {'lat': 1.3329, 'lon': 103.7436},
+            'JURONG WEST': {'lat': 1.3404, 'lon': 103.7090},
+            'KALLANG/WHAMPOA': {'lat': 1.3083, 'lon': 103.8635},
+            'MARINE PARADE': {'lat': 1.3020, 'lon': 103.9067},
+            'PASIR RIS': {'lat': 1.3721, 'lon': 103.9474},
+            'PUNGGOL': {'lat': 1.4012, 'lon': 103.9020},
+            'QUEENSTOWN': {'lat': 1.2950, 'lon': 103.7857},
+            'SEMBAWANG': {'lat': 1.4491, 'lon': 103.8185},
+            'SENGKANG': {'lat': 1.3868, 'lon': 103.8914},
+            'SERANGOON': {'lat': 1.3554, 'lon': 103.8697},
+            'TAMPINES': {'lat': 1.3496, 'lon': 103.9568},
+            'TOA PAYOH': {'lat': 1.3343, 'lon': 103.8563},
+            'WOODLANDS': {'lat': 1.4382, 'lon': 103.7890},
+            'YISHUN': {'lat': 1.4304, 'lon': 103.8354}
+        }
+        
+        # Add coordinates to map data
+        map_data['lat'] = map_data['town'].map(lambda x: town_coordinates.get(x, {'lat': 1.3521})['lat'])
+        map_data['lon'] = map_data['town'].map(lambda x: town_coordinates.get(x, {'lon': 103.8198})['lon'])
+        
+        # Add some random offset to avoid overlapping points
+        import numpy as np
+        np.random.seed(42)  # For consistent results
+        map_data['lat'] += np.random.normal(0, 0.005, len(map_data))  # Small random offset
+        map_data['lon'] += np.random.normal(0, 0.005, len(map_data))
+        
+        # Create the map
+        fig_map = px.scatter_mapbox(
+            map_data,
+            lat='lat',
+            lon='lon',
+            color='resale_price',
+            size='floor_area_sqm',
+            hover_name='town',
+            hover_data={
+                'flat_type': True,
+                'resale_price': ':$,.0f',
+                'floor_area_sqm': ':.0f',
+                'price_per_sqm': ':$,.0f',
+                'month': True,
+                'lat': False,
+                'lon': False
+            },
+            color_continuous_scale='Viridis',
+            size_max=20,
+            zoom=10,
+            center={'lat': 1.3521, 'lon': 103.8198},  # Singapore center
+            mapbox_style='open-street-map',
+            title=f'Resale Flat Locations and Prices (Showing Table Records Page {page_number}){year_suffix}',
+            labels={
+                'resale_price': 'Resale Price (S$)',
+                'floor_area_sqm': 'Floor Area (sqm)',
+                'price_per_sqm': 'Price per sqm (S$)'
+            }
+        )
+        
+        fig_map.update_layout(
+            height=500,
+            margin={'r': 0, 't': 30, 'l': 0, 'b': 0}
+        )
+        
+        st.plotly_chart(fig_map, use_container_width=True)
     else:
         st.warning(f"No data matches the selected filters{year_suffix.lower()}.")
 
@@ -1109,13 +1191,12 @@ def main():
         ["Overview", "Price Trends", "Geographic Analysis", "Flat Analysis", "Market Insights", "Data Explorer"]
     )
     
-    # Data info in sidebar
-    st.sidebar.markdown("---")
-    st.sidebar.write("### Data Information")
-    st.sidebar.write(f"**Total Records:** {len(df):,}")
-    st.sidebar.write(f"**Date Range:** {df['month'].min().strftime('%Y-%m')} to {df['month'].max().strftime('%Y-%m')}")
-    st.sidebar.write(f"**Towns:** {df['town'].nunique()}")
-    st.sidebar.write(f"**Flat Types:** {df['flat_type'].nunique()}")
+    # Initialize session state for selected year tracking across pages
+    if 'current_selected_year' not in st.session_state:
+        st.session_state.current_selected_year = "All Years"
+    
+    # Create empty placeholder for compatibility (no longer used)
+    data_info_placeholder = st.empty()
     
     # Smart Data Refresh Section - Check if refresh is needed
     current_date = datetime.now()
@@ -1136,7 +1217,7 @@ def main():
         if months_behind == 1:
             st.sidebar.warning(f"📅 Data is 1 month behind (latest: {last_data_month.strftime('%b %Y')})")
         else:
-            st.sidebar.error(f"� Data is {months_behind} months behind (latest: {last_data_month.strftime('%b %Y')})")
+            st.sidebar.error(f"📅 Data is {months_behind} months behind (latest: {last_data_month.strftime('%b %Y')})")
         
         st.sidebar.info(f"💡 Current month: {current_month.strftime('%b %Y')}")
         
@@ -1246,6 +1327,9 @@ def main():
                 options=year_options,
                 index=default_index
             )
+            
+            # Update sidebar data information when year changes
+            update_sidebar_data_info(data_info_placeholder, df, selected_year)
         
         with col2:
             # Use CSS to align the info message to the bottom
@@ -1361,19 +1445,20 @@ def main():
             st.markdown(create_area_stats_table(area_stats_formatted), unsafe_allow_html=True)
     
     elif page == "Price Trends":
-        create_price_trends(df)
+        # Get the data info placeholder from main function scope
+        create_price_trends(df, data_info_placeholder)
     
     elif page == "Geographic Analysis":
-        create_geographic_analysis(df)
+        create_geographic_analysis(df, data_info_placeholder)
     
     elif page == "Flat Analysis":
-        create_flat_analysis(df)
+        create_flat_analysis(df, data_info_placeholder)
     
     elif page == "Market Insights":
-        create_market_insights(df)
+        create_market_insights(df, data_info_placeholder)
     
     elif page == "Data Explorer":
-        create_data_explorer(df)
+        create_data_explorer(df, data_info_placeholder)
     
     # Footer
     st.markdown("---")
