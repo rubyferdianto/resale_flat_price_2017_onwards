@@ -1,0 +1,25 @@
+name: resale-flat-analysis
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.9
+  - pip
+  - numpy
+  - pandas
+  - matplotlib
+  - seaborn
+  - plotly
+  - requests
+  - scikit-learn
+  - jupyter
+  - notebook
+  - pip:
+    - streamlit
+    - streamlit-aggrid
+    - streamlit-plotly-events
+    - altair
+    - folium
+    - streamlit-folium
+    - openpyxl
+    - xlrd
