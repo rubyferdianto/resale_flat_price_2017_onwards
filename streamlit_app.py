@@ -259,35 +259,52 @@ def get_data_freshness_info():
         
     return df
 
-def create_overview_metrics(df):
+def create_overview_metrics(df, year=None):
     """Create overview metrics for the dashboard."""
     if df is None:
         return
+    
+    # Filter by year if specified
+    if year and year != "All Years":
+        filtered_df = df[df['year'] == year]
+        year_text = f" ({year})"
+    else:
+        filtered_df = df
+        year_text = " (All Years)"
         
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
         st.metric(
-            label="Total Transactions",
-            value=f"{len(df):,}"
+            label=f"Total Transactions{year_text}",
+            value=f"{len(filtered_df):,}"
         )
     
     with col2:
-        avg_price = df['resale_price'].mean()
+        avg_price = filtered_df['resale_price'].mean()
         st.metric(
-            label="Average Price",
+            label=f"Average Price{year_text}",
             value=f"S${avg_price:,.0f}"
         )
     
     with col3:
-        avg_price_per_sqm = df['price_per_sqm'].mean()
+        avg_price_per_sqm = filtered_df['price_per_sqm'].mean()
         st.metric(
-            label="Avg Price per sqm",
+            label=f"Avg Price per sqm{year_text}",
             value=f"S${avg_price_per_sqm:,.0f}"
         )
     
     with col4:
-        date_range = f"{df['month'].min().strftime('%b-%Y')} to {df['month'].max().strftime('%b-%Y')}"
+        if year and year != "All Years":
+            # For specific year, show month range within that year
+            year_data = filtered_df['month']
+            if len(year_data) > 0:
+                date_range = f"{year_data.min().strftime('%b-%Y')} to {year_data.max().strftime('%b-%Y')}"
+            else:
+                date_range = f"No data for {year}"
+        else:
+            # For all years, show full range
+            date_range = f"{df['month'].min().strftime('%b-%Y')} to {df['month'].max().strftime('%b-%Y')}"
         st.metric(
             label="Data Period",
             value=date_range
@@ -618,7 +635,9 @@ def create_data_explorer(df):
         start_idx = (page_number - 1) * records_per_page
         end_idx = start_idx + records_per_page
         
-        display_columns = ['month', 'town', 'flat_type', 'floor_area_sqm', 'resale_price', 'price_per_sqm']
+        display_columns = ['month', 'town', 'flat_type', 'block', 'street_name', 'storey_range', 
+                          'floor_area_sqm', 'flat_model', 'lease_commence_date', 'remaining_lease', 
+                          'resale_price', 'price_per_sqm']
         
         # Format the display dataframe with custom styling
         display_df = sorted_df[display_columns].iloc[start_idx:end_idx].copy()
@@ -661,7 +680,13 @@ def create_data_explorer(df):
             'month': 'Month',
             'town': 'Town', 
             'flat_type': 'Flat Type',
+            'block': 'Block',
+            'street_name': 'Street Name',
+            'storey_range': 'Storey Range',
             'floor_area_sqm': 'Floor Area (sqm)',
+            'flat_model': 'Flat Model',
+            'lease_commence_date': 'Lease Start Year',
+            'remaining_lease': 'Remaining Lease',
             'resale_price': 'Resale Price',
             'price_per_sqm': 'Price per sqm'
         })
@@ -880,16 +905,78 @@ def main():
     # Main content based on selection
     if page == "Overview":
         st.write("## 📊 Dataset Overview")
-        create_overview_metrics(df)
+        
+        # Year selector for Overview
+        col1, col2 = st.columns([1, 3])
+        with col1:
+            available_years = sorted(df['year'].unique(), reverse=True)
+            year_options = ["All Years"] + [str(year) for year in available_years]
+            
+            # Set default to 2025 if available, otherwise "All Years"
+            default_index = 0  # Default to "All Years"
+            if "2025" in year_options:
+                default_index = year_options.index("2025")
+            
+            selected_year = st.selectbox(
+                "Select Year for Analysis:",
+                options=year_options,
+                index=default_index
+            )
+        
+        with col2:
+            # Use CSS to align the info message to the bottom
+            if selected_year != "All Years":
+                info_message = f"📅  Showing analysis for **{selected_year}** only. Switch to 'All Years' for complete dataset overview."
+            else:
+                info_message = f"📅  Showing analysis for **all available years** ({min(available_years)}-{max(available_years)})"
+            
+            # Create a container with bottom alignment
+            st.markdown(f"""
+            <div style="
+                height: 80px; 
+                display: flex; 
+                align-items: flex-end; 
+                padding-bottom: 8px;
+                margin-top: -10px;
+            ">
+                <div style="
+                    background-color: transparent; 
+                    border: 1px solid transparent; 
+                    border-radius: 0.375rem; 
+                    padding: 0.75rem; 
+                    color: #cc9966;
+                    width: 100%;
+                    font-size: 0.875rem;
+                ">
+                    {info_message}
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Create metrics with year filter
+        if selected_year == "All Years":
+            create_overview_metrics(df)
+            filtered_df_for_stats = df
+        else:
+            create_overview_metrics(df, int(selected_year))
+            filtered_df_for_stats = df[df['year'] == int(selected_year)]
         
         # Basic statistics
         st.write("### 📈 Basic Statistics")
+        
+        # Show data availability message for specific years
+        if selected_year != "All Years" and len(filtered_df_for_stats) == 0:
+            st.warning(f"⚠️ No data available for {selected_year}")
+            return
+        
         col1, col2 = st.columns(2)
         
         with col1:
-            st.write("**Price Statistics**")
-            price_stats = df['resale_price'].describe()
-            # Format price statistics with commas
+            year_suffix = f" ({selected_year})" if selected_year != "All Years" else " (All Years)"
+            st.write(f"**Price Statistics{year_suffix}**")
+            price_stats = filtered_df_for_stats['resale_price'].describe()
+            # Remove count from statistics and format price statistics with commas
+            price_stats = price_stats.drop('count')
             price_stats_formatted = price_stats.apply(lambda x: f"S${x:,.0f}")
             
             # Create custom HTML table for proper alignment (same as Data Explorer)
@@ -915,9 +1002,10 @@ def main():
             st.markdown(create_price_stats_table(price_stats_formatted), unsafe_allow_html=True)
         
         with col2:
-            st.write("**Floor Area Statistics**")
-            area_stats = df['floor_area_sqm'].describe()
-            # Format area statistics with proper units and smart decimal handling
+            st.write(f"**Floor Area Statistics{year_suffix}**")
+            area_stats = filtered_df_for_stats['floor_area_sqm'].describe()
+            # Remove count from statistics and format area statistics with proper units and smart decimal handling
+            area_stats = area_stats.drop('count')
             def format_area_value(x):
                 if x == int(x):  # If it's a whole number
                     return f"{int(x)} sqm"
