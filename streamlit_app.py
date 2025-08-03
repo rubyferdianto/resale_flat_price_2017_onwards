@@ -212,34 +212,6 @@ def get_data_freshness_info():
     except:
         return None
 
-def update_sidebar_data_info(data_info_placeholder, df, selected_year="All Years"):
-    """Update the sidebar data information based on selected year."""
-    # Filter data based on selected year
-    if selected_year == "All Years":
-        filtered_df = df
-        year_suffix = " (All Years)"
-    else:
-        try:
-            filtered_df = df[df['year'] == int(selected_year)]
-            year_suffix = f" ({selected_year})"
-        except:
-            filtered_df = df
-            year_suffix = " (All Years)"
-    
-    # Update session state
-    st.session_state.current_selected_year = selected_year
-    
-    # Update the data information
-    with data_info_placeholder.container():
-        if len(filtered_df) > 0:
-            st.write(f"**Total Records:** {len(filtered_df):,}{year_suffix}")
-            st.write(f"**Date Range:** {filtered_df['month'].min().strftime('%Y-%m')} to {filtered_df['month'].max().strftime('%Y-%m')}")
-            st.write(f"**Towns:** {filtered_df['town'].nunique()}")
-            st.write(f"**Flat Types:** {filtered_df['flat_type'].nunique()}")
-        else:
-            st.write(f"**No data available for {selected_year}**")
-            st.write("Please select a different year.")
-
 def create_overview_metrics(df, year=None):
     """Create overview metrics for the dashboard."""
     if df is None:
@@ -291,7 +263,7 @@ def create_overview_metrics(df, year=None):
             value=date_range
         )
 
-def create_price_trends(df, data_info_placeholder=None):
+def create_price_trends(df):
     """Create price trend visualizations."""
     st.subheader("📈 Price Trends Analysis")
     
@@ -312,10 +284,6 @@ def create_price_trends(df, data_info_placeholder=None):
             index=default_index,
             key="price_trends_year_filter"
         )
-        
-        # Update sidebar data information when year changes
-        if data_info_placeholder:
-            update_sidebar_data_info(data_info_placeholder, df, selected_year)
     
     with col2_filter:
         # Use CSS to align the info message to the bottom
@@ -403,7 +371,7 @@ def create_price_trends(df, data_info_placeholder=None):
         fig.update_traces(hovertemplate='<b>%{x}</b><br>Price: S$%{y:,.0f}<extra></extra>')
         st.plotly_chart(fig, use_container_width=True)
 
-def create_geographic_analysis(df, data_info_placeholder=None):
+def create_geographic_analysis(df):
     """Create geographic analysis visualizations."""
     st.subheader("🗺️ Geographic Analysis")
     
@@ -424,10 +392,6 @@ def create_geographic_analysis(df, data_info_placeholder=None):
             index=default_index,
             key="geo_year_filter"
         )
-        
-        # Update sidebar data information when year changes
-        if data_info_placeholder:
-            update_sidebar_data_info(data_info_placeholder, df, selected_year)
     
     with col2_filter:
         # Use CSS to align the info message to the bottom
@@ -503,7 +467,7 @@ def create_geographic_analysis(df, data_info_placeholder=None):
         fig.update_layout(height=500)
         st.plotly_chart(fig, use_container_width=True)
 
-def create_flat_analysis(df, data_info_placeholder=None):
+def create_flat_analysis(df):
     """Create flat-specific analysis."""
     st.subheader("🏢 Flat Analysis")
     
@@ -524,10 +488,6 @@ def create_flat_analysis(df, data_info_placeholder=None):
             index=default_index,
             key="flat_analysis_year_filter"
         )
-        
-        # Update sidebar data information when year changes
-        if data_info_placeholder:
-            update_sidebar_data_info(data_info_placeholder, df, selected_year)
     
     with col2_filter:
         # Use CSS to align the info message to the bottom
@@ -603,7 +563,7 @@ def create_flat_analysis(df, data_info_placeholder=None):
         fig.update_traces(hovertemplate='<b>%{fullData.name}</b><br>Age: %{x} years<br>Price: S$%{y:,.0f}<extra></extra>')
         st.plotly_chart(fig, use_container_width=True)
 
-def create_market_insights(df, data_info_placeholder=None):
+def create_market_insights(df):
     """Create market insights and statistics."""
     st.subheader("💡 Market Insights")
     
@@ -624,10 +584,6 @@ def create_market_insights(df, data_info_placeholder=None):
             index=default_index,
             key="market_insights_year_filter"
         )
-        
-        # Update sidebar data information when year changes
-        if data_info_placeholder:
-            update_sidebar_data_info(data_info_placeholder, df, selected_year)
     
     with col2_filter:
         # Use CSS to align the info message to the bottom
@@ -754,7 +710,7 @@ def create_market_insights(df, data_info_placeholder=None):
             fig.update_layout(height=300)
             st.plotly_chart(fig, use_container_width=True)
 
-def create_data_explorer(df, data_info_placeholder=None):
+def create_data_explorer(df):
     """Create interactive data explorer."""
     st.subheader("🔍 Data Explorer")
     
@@ -766,10 +722,6 @@ def create_data_explorer(df, data_info_placeholder=None):
         index=1,  # Default to first year (2025)
         key="data_explorer_year_filter"
     )
-    
-    # Update sidebar data information when year changes
-    if data_info_placeholder:
-        update_sidebar_data_info(data_info_placeholder, df, selected_year)
     
     # Apply year filter
     if selected_year != 'All Years':
@@ -1327,9 +1279,6 @@ def main():
                 options=year_options,
                 index=default_index
             )
-            
-            # Update sidebar data information when year changes
-            update_sidebar_data_info(data_info_placeholder, df, selected_year)
         
         with col2:
             # Use CSS to align the info message to the bottom
@@ -1446,19 +1395,19 @@ def main():
     
     elif page == "Price Trends":
         # Get the data info placeholder from main function scope
-        create_price_trends(df, data_info_placeholder)
+        create_price_trends(df)
     
     elif page == "Geographic Analysis":
-        create_geographic_analysis(df, data_info_placeholder)
+        create_geographic_analysis(df)
     
     elif page == "Flat Analysis":
-        create_flat_analysis(df, data_info_placeholder)
+        create_flat_analysis(df)
     
     elif page == "Market Insights":
-        create_market_insights(df, data_info_placeholder)
+        create_market_insights(df)
     
     elif page == "Data Explorer":
-        create_data_explorer(df, data_info_placeholder)
+        create_data_explorer(df)
     
     # Footer
     st.markdown("---")
