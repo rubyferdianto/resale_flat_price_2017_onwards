@@ -2,7 +2,48 @@
 
 ## 📊 Project Overview
 
-A comprehensive, production-ready Streamlit dashboard for analyzing Singapore's resale flat prices using official data from data.gov.sg. This interactive web application provides deep insights into housing market trends, geographic patterns, and statistical analysis with advanced data exploration capabilities.
+A comprehensive, production-ready Streamlit dashboard for analyzing Singapore### 🔄 Smart Data Management Features
+- **Intelligent Refresh System**: Month-based detection preventing unnecessary API calls
+  - **Data Behind**: Shows "Data Update Available" with## 🎯 Use Cases
+
+- **Real Estate Analysis**: Market trends and pricing insights with comprehensive year-based filtering
+- **Investment Research**: Geographic and temporal price patterns with intelligent data management
+- **Academic Research**: Housing market data analysis with complete dataset visibility
+- **Government Planning**: Policy impact assessment with sophisticated temporal analysis
+- **Business Intelligence**: Market positioning and strategy with smart data refresh capabilities
+- **Monthly Reporting**: Automated data freshness detection for regular market updates
+
+## 🚀 Future Enhancements
+
+- [ ] Machine learning price predictions with historical trend analysis
+- [ ] Mobile-responsive design for tablet and phone access
+- [ ] Real-time data streaming with automatic refresh notifications
+- [ ] Advanced statistical models and correlation analysis
+- [ ] Export to multiple formats (Excel, PDF) with preserved formatting
+- [ ] User authentication and saved filter preferences
+- [ ] Email notifications for data updates and market alerts
+- [ ] Interactive map visualization with geographic clustering
+
+## 🛠️ Development Notesbility
+  - **Data Current**: Shows "Data Management" with educational warnings about HDB monthly update cycles
+  - **Smart Warnings**: Prevents resource waste when data is already current for the month
+- **Month-based Logic**: Sophisticated calculation using year/month arithmetic
+- **User Education**: Clear messaging about optimal refresh timing and HDB data release patterns
+- **Progress Tracking**: Real-time status during data fetching with comprehensive error handling
+- **Auto-reload**: Automatic page refresh after successful data update
+
+### 📅 Comprehensive Year Filtering
+- **Universal Coverage**: All 6 dashboard sections support year-specific analysis
+- **Default to Current**: 2025 selected by default for immediate relevance
+- **Consistent UI**: Uniform year selector design across all analysis sections
+- **Adaptive Analytics**: Market insights adjust methodology based on selected time period
+- **Data Availability Checks**: Clear warnings when no data exists for selected year
+
+### 🗺️ Geographic & Market Analysis
+- **Town Comparisons**: Top 15 towns by price and transaction volume with year filtering
+- **Price Trends**: Monthly trends by flat type with interactive charts and year filtering
+- **Market Insights**: YoY changes, market leaders, recent trends with adaptive year-based analytics
+- **Correlation Analysis**: Price vs area, age relationships with year filteringrices using official data from data.gov.sg. This interactive web application provides deep insights into housing market trends, geographic patterns, and statistical analysis with advanced data exploration capabilities and intelligent data management.
 
 ## ✨ Key Features
 
@@ -10,21 +51,24 @@ A comprehensive, production-ready Streamlit dashboard for analyzing Singapore's 
 - **Real-time Data Integration**: Direct connection to Singapore's official data.gov.sg API
 - **Performance Optimized**: Smart caching system with CSV storage (1.44x faster than direct API calls)
 - **Comprehensive Dashboard**: 6 analysis sections with interactive visualizations
-- **Advanced Data Explorer**: Multi-level sorting, pagination, and powerful filtering
+- **Advanced Data Explorer**: Multi-level sorting, pagination, and powerful filtering with complete column visibility
+- **Intelligent Data Refresh**: Smart month-based detection system preventing unnecessary API calls
 
 ### 📈 Analysis Sections
-1. **Overview**: Dataset metrics, price statistics, and floor area analysis
-2. **Price Trends**: Monthly trends, flat type comparisons, and distribution analysis
-3. **Geographic Analysis**: Town-wise price analysis and transaction volumes
-4. **Flat Analysis**: Price vs area/age correlations with scatter plots
-5. **Market Insights**: YoY changes, market leaders, and recent trends
-6. **Data Explorer**: Interactive filtering, sorting, and data export
+1. **Overview**: Dataset metrics, price statistics, and floor area analysis with year filtering
+2. **Price Trends**: Monthly trends, flat type comparisons, and distribution analysis with year filtering
+3. **Geographic Analysis**: Town-wise price analysis and transaction volumes with year filtering
+4. **Flat Analysis**: Price vs area/age correlations with scatter plots and year filtering
+5. **Market Insights**: YoY changes, market leaders, and recent trends with adaptive year-based analytics
+6. **Data Explorer**: Interactive filtering, sorting, data export, and complete column display with year filtering
 
 ### 🎨 User Experience
 - **Professional UI**: Custom styling with optimized table layouts and red-themed headers
 - **Smart Data Formatting**: Currency formatting, number alignment, and intuitive displays
 - **Responsive Design**: Optimized for desktop viewing with proper column alignment
 - **Export Functionality**: Download filtered data as CSV for further analysis
+- **Year-based Filtering**: Comprehensive temporal analysis across all dashboard sections
+- **Smart Refresh Management**: Intelligent system that detects data freshness and guides users on optimal refresh timing
 
 ## 📋 Prerequisites
 
@@ -134,17 +178,20 @@ head -5 resale_flat_data.csv
 - **Professional Tables**: Custom HTML tables with optimized alignment and styling
 
 ### 📈 Data Explorer (Advanced Features)
+- **Complete Column Visibility**: All CSV columns available including block, street_name, storey_range, flat_model, lease_commence_date, remaining_lease
 - **Multi-level Sorting**: Default month descending + user-selected secondary column
 - **Smart Pagination**: 50 records per page with intuitive navigation
+- **Year Filtering**: Comprehensive temporal analysis with default to 2025
 - **Advanced Filtering**: 
   - Multi-select towns and flat types
   - Month range selection with recent-first ordering
   - Price range slider with formatted display
-- **Data Export**: Download filtered results as CSV
+- **Data Export**: Download filtered results as CSV with intelligent filename generation
 - **Professional Formatting**: 
   - Right-aligned price columns with monospace font
   - Smart number formatting with currency symbols
-  - Responsive table design
+  - Custom HTML tables for precise control
+  - Responsive table design optimized for all columns
 
 ### � Data Management Features
 - **Smart Data Freshness**: Color-coded indicators showing data age
@@ -167,48 +214,50 @@ head -5 resale_flat_data.csv
 
 ```
 resale_flat_price_2017_onwards/
-├── streamlit_app.py         # Main dashboard application (970+ lines)
+├── streamlit_app.py         # Main dashboard application (1400+ lines)
 ├── data_fetcher.py          # API integration and caching system (227 lines)
 ├── run_dashboard.sh         # Easy startup script
 ├── environment.yml          # Conda environment configuration  
-├── requirements.txt         # Pip requirements
-├── readme.md               # Project documentation
-├── resale_flat_data.csv    # Cached dataset (auto-generated)
+├── requirements.txt         # Pip requirements (preserved for compatibility)
+├── readme.md               # Comprehensive project documentation
+├── resale_flat_data.csv    # Cached dataset (auto-generated, 212K+ records)
 ├── data_metadata.json      # Dataset metadata (auto-generated)
 └── .gitignore              # Git ignore rules
 ```
 
 **Core Files (Essential):**
-- `streamlit_app.py` - The main dashboard application
-- `data_fetcher.py` - Handles API connections and data caching
-- `run_dashboard.sh` - Startup script for easy launching
+- `streamlit_app.py` - The main dashboard application with 6 analysis sections and intelligent data management
+- `data_fetcher.py` - Handles API connections, data caching, and performance optimization
+- `run_dashboard.sh` - Startup script for easy launching with environment activation
 
 **Configuration Files:**
-- `environment.yml` - Conda environment setup
-- `requirements.txt` - Pip package requirements
+- `environment.yml` - Conda environment setup with all dependencies
+- `requirements.txt` - Pip package requirements (maintained for pip users)
 
 **Data Files (Auto-generated):**
-- `resale_flat_data.csv` - Local data cache (212,808+ records)
-- `data_metadata.json` - Data freshness tracking
+- `resale_flat_data.csv` - Local data cache with complete dataset (212,808+ records from 2017-2025)
+- `data_metadata.json` - Data freshness tracking for intelligent refresh management
 
 ## 🔧 Technical Details
 
 ### Performance & Data Management
-- **Smart Caching**: Streamlit @st.cache_data with 1-hour TTL
-- **Hybrid Data Access**: CSV cache (1.44x faster) with API fallback
-- **Manual Refresh**: Force update from official API with user confirmation
-- **Progress Tracking**: Real-time feedback during data operations
-- **Memory Management**: Strategic sampling for large visualizations
+- **Intelligent Caching**: Streamlit @st.cache_data with 1-hour TTL plus smart refresh logic
+- **Hybrid Data Access**: CSV cache (1.44x faster) with API fallback and month-based refresh detection
+- **Smart Refresh System**: Prevents unnecessary API calls when data is current for the month
+- **Progress Tracking**: Real-time feedback during data operations with comprehensive error handling
+- **Memory Management**: Strategic sampling for large visualizations (5000 records for scatter plots)
+- **Complete Data Access**: All CSV columns exposed in Data Explorer for comprehensive analysis
 
 ### Data Processing Pipeline
-1. **API Connection**: Automated pagination for complete dataset retrieval
-2. **Data Cleaning**: Type conversion, date parsing, calculated fields
-3. **Feature Engineering**: Price per sqm, flat age calculations
-4. **Caching Strategy**: Local CSV storage with metadata tracking
+1. **API Connection**: Automated pagination for complete dataset retrieval from data.gov.sg
+2. **Data Cleaning**: Type conversion, date parsing, calculated fields (price_per_sqm, flat_age)
+3. **Feature Engineering**: Advanced calculations and data enrichment
+4. **Intelligent Caching**: Local CSV storage with metadata tracking and month-based freshness detection
+5. **Year-based Analysis**: Comprehensive temporal filtering across all dashboard sections
 ```bash
 export DATA_CACHE_DIR="./data"
 export API_TIMEOUT=30
-export CSV_UPDATE_INTERVAL="daily"
+export REFRESH_CHECK_INTERVAL="monthly"
 ```
 
 ## 🚨 Troubleshooting
@@ -242,9 +291,10 @@ export CSV_UPDATE_INTERVAL="daily"
 
 ### Performance Tips
 
-- **For First-Time Setup**: Use the startup script `./run_dashboard.sh`
+- **For First-Time Setup**: Use the startup script `./run_dashboard.sh` for automated environment setup
 - **For Development**: Activate environment and run `streamlit run streamlit_app.py`
-- **For Production**: Use CSV caching and the refresh button for updates
+- **For Production**: Leverage intelligent refresh system and CSV caching for optimal performance
+- **Data Management**: Use the smart refresh system that prevents unnecessary API calls when data is current
 
 ## 📈 Analysis Features
 
@@ -280,12 +330,14 @@ The project uses Singapore's official resale flat price data from:
 ## 🛠️ Development Notes
 
 ### Code Quality
-- **980 lines** of production-ready Streamlit code (main dashboard)
-- **226 lines** of data fetching and caching logic
-- **1,206 total lines** of clean, documented Python code
-- **Modular Functions**: Separate functions for each analysis section
-- **Custom HTML/CSS**: Precise control over table formatting and alignment
-- **Error Handling**: Robust data validation and fallback mechanisms
+- **1400+ lines** of production-ready Streamlit code (main dashboard)
+- **227 lines** of data fetching and caching logic  
+- **1,627+ total lines** of clean, documented Python code
+- **Modular Architecture**: Separate functions for each analysis section with consistent year filtering
+- **Custom HTML/CSS**: Precise control over table formatting, alignment, and professional styling
+- **Intelligent Systems**: Smart refresh logic with month-based detection and user education
+- **Error Handling**: Robust data validation, fallback mechanisms, and comprehensive user feedback
+- **Complete Feature Coverage**: All CSV columns exposed, comprehensive year filtering, advanced sorting
 
 ### Dependencies
 ```yaml
@@ -408,32 +460,33 @@ For questions or support, please contact:
 3. **Price Indication**: Resale prices are indicative only as agreed prices depend on many factors
 4. **Data Accuracy**: Data is sourced from official HDB records and updated monthly
 
-## 🔄 Data Refresh Feature
+## 🔄 Smart Data Refresh System
 
-### How to Refresh Data:
+### How the Intelligent Refresh Works:
 
-1. **Check Data Age**: Look at the sidebar "Data Management" section
-2. **Click Refresh Button**: Click "🔄 Refresh Data from API" 
-3. **Confirm Action**: Review the warning and click "✅ Continue"
-4. **Wait for Progress**: Monitor real-time progress indicators:
-   - 🔄 Connecting to data.gov.sg API...
-   - 📡 Fetching latest data from Singapore HDB...
-   - 💾 Saving XXX,XXX records to local cache...
-   - ✅ Data refresh completed successfully!
-5. **Auto-reload**: Page automatically refreshes with new data
+1. **Automatic Detection**: System calculates months behind using current date vs. latest data month
+2. **Smart UI Display**: 
+   - **Data Behind**: Shows "🔄 Data Update Available" with full refresh capability
+   - **Data Current**: Shows "🔄 Data Management" with educational warnings
+3. **User Education**: Clear messaging about HDB monthly update cycles and optimal refresh timing
+4. **Resource Efficiency**: Prevents unnecessary API calls when data is already current
 
-### Data Freshness Indicators:
-- ✅ **Green**: Fresh data (updated today)
-- 📅 **Blue**: Recent data (1-7 days old)
-- ⚠️ **Orange**: Aging data (8-30 days old)
-- 🔴 **Red**: Old data (30+ days) - Refresh recommended
+### Refresh Process:
+1. **Check Data Status**: Look at the sidebar data management section
+2. **Smart Button Logic**: 
+   - Enabled with update messaging when data is behind
+   - Enabled with warning when data is current (educational purpose)
+3. **Confirm Action**: Review the intelligent warning and click "✅ Continue" or "🚫 Understood"
+4. **Monitor Progress**: Real-time progress indicators with comprehensive error handling
+5. **Auto-reload**: Automatic page refresh after successful data update
 
 ### Safety Features:
-- Warning dialog before API calls
-- Progress tracking during refresh
-- Error handling with clear messages
-- Automatic cache clearing after update
-- Confirmation required before proceeding
+- Month-based freshness detection with sophisticated calculation logic
+- Educational warnings about HDB data release cycles
+- Progress tracking during refresh with detailed status messages
+- Comprehensive error handling with user-friendly feedback
+- Automatic cache clearing and page reload after successful update
+- Resource-efficient design preventing unnecessary API calls
 
 ## 🎯 Use Cases
 

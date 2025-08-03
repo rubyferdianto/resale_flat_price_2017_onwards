@@ -1117,69 +1117,107 @@ def main():
     st.sidebar.write(f"**Towns:** {df['town'].nunique()}")
     st.sidebar.write(f"**Flat Types:** {df['flat_type'].nunique()}")
     
-    # Data freshness and refresh section
-    st.sidebar.markdown("---")
-    st.sidebar.write("### 🔄 Data Management")
+    # Smart Data Refresh Section - Check if refresh is needed
+    current_date = datetime.now()
+    current_month = current_date.replace(day=1)  # First day of current month
+    last_data_month = df['month'].max()
     
-    # Show data freshness info
-    freshness_info = get_data_freshness_info()
-    if freshness_info:
-        st.sidebar.write(f"**Last Updated:** {freshness_info['last_updated'].strftime('%Y-%m-%d %H:%M')}")
+    # Calculate months behind
+    months_behind = (current_month.year - last_data_month.year) * 12 + (current_month.month - last_data_month.month)
+    
+    # Data is outdated if it's from a previous month
+    data_is_outdated = months_behind > 0
+    
+    if data_is_outdated:
+        st.sidebar.markdown("---")
+        st.sidebar.write("### 🔄 Data Update Available")
         
-        # Color-code based on age
-        days_old = freshness_info['days_old']
-        if days_old == 0:
-            st.sidebar.success("✅ Data is fresh (today)")
-        elif days_old <= 7:
-            st.sidebar.info(f"📅 Data is {days_old} day(s) old")
-        elif days_old <= 30:
-            st.sidebar.warning(f"⚠️ Data is {days_old} days old")
+        # Show data freshness info based on calculated months_behind
+        if months_behind == 1:
+            st.sidebar.warning(f"📅 Data is 1 month behind (latest: {last_data_month.strftime('%b %Y')})")
         else:
-            st.sidebar.error(f"🔴 Data is {days_old} days old - Consider refreshing")
+            st.sidebar.error(f"� Data is {months_behind} months behind (latest: {last_data_month.strftime('%b %Y')})")
+        
+        st.sidebar.info(f"💡 Current month: {current_month.strftime('%b %Y')}")
+        
+        # Initialize session state for refresh confirmation
+        if 'show_refresh_warning' not in st.session_state:
+            st.session_state.show_refresh_warning = False
+        
+        # Refresh button - only enabled when data is outdated
+        if st.sidebar.button("🔄 Refresh Data from API", help="Fetch the latest data from data.gov.sg"):
+            st.session_state.show_refresh_warning = True
+        
+        # Show warning and confirmation if button was clicked
+        if st.session_state.show_refresh_warning:
+            st.sidebar.warning("⚠️ **Warning**: This will fetch fresh data from the API.")
+            st.sidebar.write("**This process will:**")
+            st.sidebar.write("• Take 1-2 minutes to complete")
+            st.sidebar.write("• Download all latest records")
+            st.sidebar.write("• Replace your current cache")
+            
+            col1, col2 = st.sidebar.columns(2)
+            
+            with col1:
+                if st.button("✅ Continue", key="confirm_refresh"):
+                    st.session_state.show_refresh_warning = False
+                    
+                    # Show refresh process
+                    with st.spinner("🔄 Refreshing data from API..."):
+                        refresh_container = st.container()
+                        with refresh_container:
+                            if refresh_data_from_api():
+                                st.success("✅ **Data refreshed successfully!**")
+                                st.info("🔄 **Please refresh your browser** to see the updated data.")
+                                st.balloons()
+                                # Auto-refresh the page after 3 seconds
+                                time.sleep(3)
+                                st.rerun()
+                            else:
+                                st.error("❌ **Data refresh failed.** Please try again later.")
+            
+            with col2:
+                if st.button("❌ Cancel", key="cancel_refresh"):
+                    st.session_state.show_refresh_warning = False
+                    st.sidebar.info("Data refresh cancelled.")
+                    st.rerun()
     else:
-        st.sidebar.write("**Data Status:** Cache information unavailable")
-    
-    # Initialize session state for refresh confirmation
-    if 'show_refresh_warning' not in st.session_state:
-        st.session_state.show_refresh_warning = False
-    
-    # Refresh button
-    if st.sidebar.button("🔄 Refresh Data from API", help="Fetch the latest data from data.gov.sg"):
-        st.session_state.show_refresh_warning = True
-    
-    # Show warning and confirmation if button was clicked
-    if st.session_state.show_refresh_warning:
-        st.sidebar.warning("⚠️ **Warning**: This will fetch fresh data from the API.")
-        st.sidebar.write("**This process will:**")
-        st.sidebar.write("• Take 1-2 minutes to complete")
-        st.sidebar.write("• Download all latest records")
-        st.sidebar.write("• Replace your current cache")
+        # Data is current but show refresh button with special warning (0 months behind)
+        st.sidebar.markdown("---")
+        st.sidebar.write("### 🔄 Data Management")
+        st.sidebar.success(f"📅 Data is current (latest: {last_data_month.strftime('%b %Y')})")
         
-        col1, col2 = st.sidebar.columns(2)
-        
-        with col1:
-            if st.button("✅ Continue", key="confirm_refresh"):
-                st.session_state.show_refresh_warning = False
+        # Use the already calculated months_behind
+        if months_behind == 0:
+            # Initialize session state for special refresh warning
+            if 'show_current_month_warning' not in st.session_state:
+                st.session_state.show_current_month_warning = False
+            
+            # Show refresh button even when current
+            if st.sidebar.button("🔄 Refresh Data from API", help="Check for any new data from data.gov.sg"):
+                st.session_state.show_current_month_warning = True
+            
+            # Show special warning for current month refresh
+            if st.session_state.show_current_month_warning:
+                st.sidebar.warning("⚠️ **Data is already current for this month**")
+                st.sidebar.info("📅 **New data will be available next month only**")
+                st.sidebar.write("**Note:** Refreshing now may not fetch new records since HDB updates monthly.")
                 
-                # Show refresh process
-                with st.spinner("� Refreshing data from API..."):
-                    refresh_container = st.container()
-                    with refresh_container:
-                        if refresh_data_from_api():
-                            st.success("✅ **Data refreshed successfully!**")
-                            st.info("🔄 **Please refresh your browser** to see the updated data.")
-                            st.balloons()
-                            # Auto-refresh the page after 3 seconds
-                            time.sleep(3)
-                            st.rerun()
-                        else:
-                            st.error("❌ **Data refresh failed.** Please try again later.")
-        
-        with col2:
-            if st.button("❌ Cancel", key="cancel_refresh"):
-                st.session_state.show_refresh_warning = False
-                st.sidebar.info("Data refresh cancelled.")
-                st.rerun()
+                col1, col2 = st.sidebar.columns(2)
+                
+                with col1:
+                    if st.button("🚫 Understood", key="acknowledge_current"):
+                        st.session_state.show_current_month_warning = False
+                        st.sidebar.info("💡 Try refreshing next month for new data.")
+                        st.rerun()
+                
+                with col2:
+                    if st.button("❌ Cancel", key="cancel_current_refresh"):
+                        st.session_state.show_current_month_warning = False
+                        st.rerun()
+        else:
+            # Data is somehow ahead (shouldn't happen normally)
+            st.sidebar.info("🔒 Refresh is disabled - data is up to date")
     
     # API Info
     st.sidebar.markdown("---")
