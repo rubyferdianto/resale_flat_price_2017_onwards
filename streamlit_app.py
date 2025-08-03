@@ -11,6 +11,8 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 import json
+import time
+import requests
 from data_fetcher import ResaleFlatDataFetcher
 
 # Page configuration
@@ -28,9 +30,29 @@ st.markdown("""
         font-size: 3rem;
         color: #1f77b4;
         text-align: center;
-        margin-bottom: 2rem;
-    }
-    .metric-card {
+        margin-bottom: 2re        with col1:
+            if st.button("✅ Continue", key="confirm_refresh"):
+                st.session_state.show_refresh_warning = False
+                
+                # Show refresh process in main area
+                st.info("🚀 **Data refresh started** - Please wait while we fetch the latest data...")
+                
+                refresh_placeholder = st.empty()
+                with refresh_placeholder:
+                    if refresh_data_from_api():
+                        st.success("✅ **Data refreshed successfully!**")
+                        st.info("🔄 The page will automatically reload with updated data.")
+                        st.balloons()
+                        # Auto-refresh after showing success message
+                        time.sleep(2)
+                        st.rerun()
+                    else:
+                        st.error("❌ **Data refresh failed.** Please check your internet connection and try again.")
+        
+        with col2:
+            if st.button("❌ Cancel", key="cancel_refresh"):
+                st.session_state.show_refresh_warning = False
+                st.rerun().metric-card {
         background-color: #f0f2f6;
         padding: 1rem;
         border-radius: 0.5rem;
@@ -67,26 +89,154 @@ st.markdown("""
 @st.cache_data(ttl=3600)  # Cache for 1 hour
 def load_data():
     """Load data with caching for better performance."""
+    try:
+        fetcher = ResaleFlatDataFetcher()
+        
+        # Try to load from CSV first
+        df = fetcher.load_from_csv()
+        
+        # If CSV doesn't exist, fetch from API and save
+        if df is None:
+            st.info("CSV file not found. Fetching data from API... This may take a moment.")
+            data = fetcher.fetch_all_data()
+            if data:
+                fetcher.save_to_csv(data)
+                df = pd.DataFrame(data)
+            else:
+                st.error("Failed to fetch data from API")
+                return None
+        
+        # Show initial data info
+        st.sidebar.info(f"📊 Raw data loaded: {len(df):,} records")
+        
+        # Data preprocessing
+        if df is not None:
+            try:
+                # Convert month to datetime
+                df['month'] = pd.to_datetime(df['month'])
+                
+                # Convert resale_price to numeric
+                df['resale_price'] = pd.to_numeric(df['resale_price'], errors='coerce')
+                
+                # Convert floor_area_sqm to numeric
+                df['floor_area_sqm'] = pd.to_numeric(df['floor_area_sqm'], errors='coerce')
+                
+                # Calculate price per sqm
+                df['price_per_sqm'] = df['resale_price'] / df['floor_area_sqm']
+                
+                # Extract year from month
+                df['year'] = df['month'].dt.year
+                
+                # Clean up lease_commence_date
+                df['lease_commence_date'] = pd.to_numeric(df['lease_commence_date'], errors='coerce')
+                
+                # Calculate flat age
+                current_year = datetime.now().year
+                df['flat_age'] = current_year - df['lease_commence_date']
+                
+                # Remove rows with missing critical data
+                original_count = len(df)
+                df = df.dropna(subset=['resale_price', 'floor_area_sqm', 'month'])
+                cleaned_count = len(df)
+                
+                if original_count != cleaned_count:
+                    st.sidebar.info(f"🧹 Cleaned data: {cleaned_count:,} records ({original_count - cleaned_count:,} removed)")
+                
+                return df
+                
+            except Exception as e:
+                st.error(f"Error processing data: {str(e)}")
+                st.error("Please check the data format and try refreshing the data.")
+                return None
+        
+        return None
+        
+    except Exception as e:
+        st.error(f"Critical error loading data: {str(e)}")
+        st.error("Please check your environment setup and data files.")
+        return None
+
+def refresh_data_from_api():
+    """Force refresh data from API, bypassing cache."""
     fetcher = ResaleFlatDataFetcher()
     
-    # Try to load from CSV first
-    df = fetcher.load_from_csv()
+    # Create containers for progress display
+    progress_container = st.empty()
+    status_container = st.empty()
     
-    # If CSV doesn't exist, fetch from API and save
-    if df is None:
-        st.info("CSV file not found. Fetching data from API... This may take a moment.")
-        data = fetcher.fetch_all_data()
-        if data:
-            fetcher.save_to_csv(data)
-            df = pd.DataFrame(data)
-        else:
-            st.error("Failed to fetch data from API")
-            return None
-    
-    # Data preprocessing
-    if df is not None:
-        # Convert month to datetime
-        df['month'] = pd.to_datetime(df['month'])
+    try:
+        with progress_container.container():
+            # Create progress bar and status text
+            progress_bar = st.progress(0)
+            
+        with status_container.container():
+            status_text = st.empty()
+            
+            status_text.text("🔄 Connecting to data.gov.sg API...")
+            progress_bar.progress(10)
+            time.sleep(0.5)
+            
+            status_text.text("📡 Fetching latest data from Singapore HDB...")
+            progress_bar.progress(20)
+            
+            # Fetch data with better error handling
+            data = fetcher.fetch_all_data()
+            progress_bar.progress(70)
+            
+            if data and len(data) > 0:
+                status_text.text(f"💾 Saving {len(data):,} records to local cache...")
+                success = fetcher.save_to_csv(data)
+                progress_bar.progress(90)
+                
+                if success:
+                    status_text.text("✅ Data refresh completed successfully!")
+                    progress_bar.progress(100)
+                    time.sleep(1)
+                    
+                    # Clear Streamlit cache to force reload
+                    st.cache_data.clear()
+                    
+                    # Clean up progress indicators
+                    progress_container.empty()
+                    status_container.empty()
+                    
+                    return True
+                else:
+                    status_text.error("❌ Failed to save data to cache")
+                    return False
+            else:
+                status_text.error("❌ No data received from API")
+                return False
+                
+    except requests.RequestException as e:
+        status_container.error(f"❌ Network error: Unable to connect to data.gov.sg API")
+        return False
+    except Exception as e:
+        status_container.error(f"❌ Unexpected error during data refresh: {str(e)}")
+        return False
+    finally:
+        # Clean up after delay
+        time.sleep(2)
+        progress_container.empty()
+        status_container.empty()
+
+def get_data_freshness_info():
+    """Get information about when data was last updated."""
+    try:
+        import json
+        with open('data_metadata.json', 'r') as f:
+            metadata = json.load(f)
+        
+        last_updated = pd.to_datetime(metadata['last_updated'])
+        days_old = (datetime.now() - last_updated).days
+        
+        return {
+            'last_updated': last_updated,
+            'days_old': days_old,
+            'total_records': metadata.get('total_records', 'Unknown')
+        }
+    except:
+        return None
         
         # Convert resale_price to numeric
         df['resale_price'] = pd.to_numeric(df['resale_price'], errors='coerce')
@@ -655,6 +805,77 @@ def main():
     st.sidebar.write(f"**Date Range:** {df['month'].min().strftime('%Y-%m')} to {df['month'].max().strftime('%Y-%m')}")
     st.sidebar.write(f"**Towns:** {df['town'].nunique()}")
     st.sidebar.write(f"**Flat Types:** {df['flat_type'].nunique()}")
+    
+    # Data freshness and refresh section
+    st.sidebar.markdown("---")
+    st.sidebar.write("### 🔄 Data Management")
+    
+    # Show data freshness info
+    freshness_info = get_data_freshness_info()
+    if freshness_info:
+        st.sidebar.write(f"**Last Updated:** {freshness_info['last_updated'].strftime('%Y-%m-%d %H:%M')}")
+        
+        # Color-code based on age
+        days_old = freshness_info['days_old']
+        if days_old == 0:
+            st.sidebar.success("✅ Data is fresh (today)")
+        elif days_old <= 7:
+            st.sidebar.info(f"📅 Data is {days_old} day(s) old")
+        elif days_old <= 30:
+            st.sidebar.warning(f"⚠️ Data is {days_old} days old")
+        else:
+            st.sidebar.error(f"🔴 Data is {days_old} days old - Consider refreshing")
+    else:
+        st.sidebar.write("**Data Status:** Cache information unavailable")
+    
+    # Initialize session state for refresh confirmation
+    if 'show_refresh_warning' not in st.session_state:
+        st.session_state.show_refresh_warning = False
+    
+    # Refresh button
+    if st.sidebar.button("🔄 Refresh Data from API", help="Fetch the latest data from data.gov.sg"):
+        st.session_state.show_refresh_warning = True
+    
+    # Show warning and confirmation if button was clicked
+    if st.session_state.show_refresh_warning:
+        st.sidebar.warning("⚠️ **Warning**: This will fetch fresh data from the API.")
+        st.sidebar.write("**This process will:**")
+        st.sidebar.write("• Take 1-2 minutes to complete")
+        st.sidebar.write("• Download all latest records")
+        st.sidebar.write("• Replace your current cache")
+        
+        col1, col2 = st.sidebar.columns(2)
+        
+        with col1:
+            if st.button("✅ Continue", key="confirm_refresh"):
+                st.session_state.show_refresh_warning = False
+                
+                # Show refresh process
+                with st.spinner("� Refreshing data from API..."):
+                    refresh_container = st.container()
+                    with refresh_container:
+                        if refresh_data_from_api():
+                            st.success("✅ **Data refreshed successfully!**")
+                            st.info("🔄 **Please refresh your browser** to see the updated data.")
+                            st.balloons()
+                            # Auto-refresh the page after 3 seconds
+                            time.sleep(3)
+                            st.rerun()
+                        else:
+                            st.error("❌ **Data refresh failed.** Please try again later.")
+        
+        with col2:
+            if st.button("❌ Cancel", key="cancel_refresh"):
+                st.session_state.show_refresh_warning = False
+                st.sidebar.info("Data refresh cancelled.")
+                st.rerun()
+    
+    # API Info
+    st.sidebar.markdown("---")
+    st.sidebar.write("### 📡 API Information")
+    st.sidebar.write("**Source:** data.gov.sg")
+    st.sidebar.write("**Update Frequency:** Monthly by HDB")
+    st.sidebar.write("**Dataset:** Resale Flat Prices (2017 onwards)")
     
     # Main content based on selection
     if page == "Overview":

@@ -40,18 +40,90 @@ A comprehensive, production-ready Streamlit dashboard for analyzing Singapore's 
 # Clone or download the project
 # Navigate to project directory
 
-# Create and activate conda environment
+# Create and activate conda environment (if available)
 conda env create -f environment.yml
 conda activate resale-flat-analysis
+
+# OR create virtual environment with pip
+python3 -m venv .venv
+source .venv/bin/activate  # On macOS/Linux
+# .venv\Scripts\activate   # On Windows
+pip install -r requirements.txt
 ```
 
 ### 2. Run the Dashboard
+
+**Option A: Using the startup script (Recommended)**
 ```bash
+./run_dashboard.sh
+```
+
+**Option B: Manual activation**
+```bash
+# Activate your environment first
+source .venv/bin/activate  # For venv
+# OR
+conda activate resale-flat-analysis  # For conda
+
+# Then run Streamlit
 streamlit run streamlit_app.py
 ```
 
 ### 3. Access the Application
 Open your browser and navigate to: `http://localhost:8501`
+
+## 🚨 Troubleshooting
+
+### "Failed to load data" Error
+
+If you see this error, it's usually because the virtual environment isn't activated:
+
+**Solution 1: Use the startup script**
+```bash
+./run_dashboard.sh
+```
+
+**Solution 2: Manual environment activation**
+```bash
+# For virtual environment users:
+source .venv/bin/activate
+streamlit run streamlit_app.py
+
+# For conda users:
+conda activate resale-flat-analysis
+streamlit run streamlit_app.py
+```
+
+**Solution 3: Check data files**
+```bash
+# Verify CSV exists and has data
+ls -la resale_flat_data.csv
+head -5 resale_flat_data.csv
+```
+
+### Common Issues
+
+1. **Environment Not Activated**
+   ```
+   Error: ModuleNotFoundError: No module named 'streamlit'
+   ```
+   - **Fix**: Always activate your environment before running Streamlit
+   - **Quick Fix**: Use `./run_dashboard.sh`
+
+2. **Virtual Environment Issues**
+   ```
+   error: externally-managed-environment
+   ```
+   - **Fix**: Use virtual environment: `python3 -m venv .venv && source .venv/bin/activate`
+   - **Then**: `pip install -r requirements.txt`
+
+3. **Data Loading Issues**
+   ```
+   Failed to load data. Please check your internet connection and try again.
+   ```
+   - **Fix**: Ensure environment is activated and dependencies are installed
+   - **Check**: Data files exist with `ls resale_flat_data.csv`
+   - **Reset**: Delete CSV files to force fresh API fetch
 
 ## 🎮 Dashboard Features
 
@@ -74,7 +146,18 @@ Open your browser and navigate to: `http://localhost:8501`
   - Smart number formatting with currency symbols
   - Responsive table design
 
-### 🗺️ Geographic & Market Analysis
+### � Data Management Features
+- **Smart Data Freshness**: Color-coded indicators showing data age
+  - ✅ Green: Fresh data (today)
+  - 📅 Blue: Recent data (1-7 days)
+  - ⚠️ Orange: Aging data (8-30 days)
+  - 🔴 Red: Old data (30+ days) - Refresh recommended
+- **One-Click Refresh**: Manual data refresh with progress tracking
+- **Safety Confirmations**: Warning dialogs before API calls
+- **Progress Indicators**: Real-time status during data fetching
+- **Auto-reload**: Automatic page refresh after successful data update
+
+### �🗺️ Geographic & Market Analysis
 - **Town Comparisons**: Top 15 towns by price and transaction volume
 - **Price Trends**: Monthly trends by flat type with interactive charts
 - **Market Insights**: YoY changes, market leaders, recent trends
@@ -84,7 +167,7 @@ Open your browser and navigate to: `http://localhost:8501`
 
 ```
 resale_flat_price_2017_onwards/
-├── streamlit_app.py         # Main dashboard application (726 lines)
+├── streamlit_app.py         # Main dashboard application (850+ lines)
 ├── data_fetcher.py          # API integration and caching system
 ├── environment.yml          # Conda environment configuration  
 ├── readme.md               # Project documentation
@@ -94,10 +177,11 @@ resale_flat_price_2017_onwards/
 
 ## 🔧 Technical Details
 
-### Performance Optimization
+### Performance & Data Management
 - **Smart Caching**: Streamlit @st.cache_data with 1-hour TTL
-- **CSV vs API**: Automated fallback system (CSV 1.44x faster)
-- **Data Processing**: Efficient pandas operations with numpy integration
+- **Hybrid Data Access**: CSV cache (1.44x faster) with API fallback
+- **Manual Refresh**: Force update from official API with user confirmation
+- **Progress Tracking**: Real-time feedback during data operations
 - **Memory Management**: Strategic sampling for large visualizations
 
 ### Data Processing Pipeline
@@ -306,22 +390,91 @@ For questions or support, please contact:
 3. **Price Indication**: Resale prices are indicative only as agreed prices depend on many factors
 4. **Data Accuracy**: Data is sourced from official HDB records and updated monthly
 
-## 🔄 Updates
+## 🔄 Data Refresh Feature
 
-- **v1.0.0**: Initial release with basic data fetching and Streamlit dashboard
-- **v1.1.0**: Added performance comparison and CSV caching
-- **v1.2.0**: Enhanced visualizations and predictive analytics
-- **v1.3.0**: Added geographic analysis and advanced filtering
-- **v1.4.0**: UI/UX improvements with right-aligned price columns and theme compatibility
-- **v1.5.0**: Enhanced filtering with month selection and improved data formatting
-- **v1.6.0**: Advanced UI improvements with red headers and enhanced price range display
+### How to Refresh Data:
 
-### Latest Updates (v1.6.0)
+1. **Check Data Age**: Look at the sidebar "Data Management" section
+2. **Click Refresh Button**: Click "🔄 Refresh Data from API" 
+3. **Confirm Action**: Review the warning and click "✅ Continue"
+4. **Wait for Progress**: Monitor real-time progress indicators:
+   - 🔄 Connecting to data.gov.sg API...
+   - 📡 Fetching latest data from Singapore HDB...
+   - 💾 Saving XXX,XXX records to local cache...
+   - ✅ Data refresh completed successfully!
+5. **Auto-reload**: Page automatically refreshes with new data
+
+### Data Freshness Indicators:
+- ✅ **Green**: Fresh data (updated today)
+- 📅 **Blue**: Recent data (1-7 days old)
+- ⚠️ **Orange**: Aging data (8-30 days old)
+- 🔴 **Red**: Old data (30+ days) - Refresh recommended
+
+### Safety Features:
+- Warning dialog before API calls
+- Progress tracking during refresh
+- Error handling with clear messages
+- Automatic cache clearing after update
+- Confirmation required before proceeding
+
+## 🎯 Use Cases
+
+- **Real Estate Analysis**: Market trends and pricing insights
+- **Investment Research**: Geographic and temporal price patterns  
+- **Academic Research**: Housing market data analysis
+- **Government Planning**: Policy impact assessment
+- **Business Intelligence**: Market positioning and strategy
+
+## 🚀 Future Enhancements
+
+- [ ] Machine learning price predictions
+- [ ] Mobile-responsive design
+- [ ] Real-time data streaming
+- [ ] Advanced statistical models
+- [ ] Export to multiple formats (Excel, PDF)
+- [ ] User authentication and saved filters
+
+## 📞 Support & Contact
+
+- **GitHub**: [rubyferdianto/resale_flat_price_2017_onwards](https://github.com/rubyferdianto)
+- **Documentation**: Comprehensive inline code documentation
+- **Issues**: GitHub Issues for bug reports and feature requests
+
+## 🙏 Acknowledgments
+
+- **Data.gov.sg**: Official Singapore government data portal
+- **HDB Singapore**: Housing & Development Board for data collection
+- **Streamlit Community**: Excellent framework and documentation
+
+## 📊 Data Notes
+
+1. **Floor Area**: Includes recess area purchased, space adding items under HDB's upgrading programmes, roof terrace, etc.
+2. **Transaction Exclusions**: Excludes resale transactions that may not reflect full market price (e.g., resale between relatives, part shares)
+3. **Price Indication**: Resale prices are indicative only as agreed prices depend on many factors
+4. **Data Accuracy**: Data is sourced from official HDB records and updated monthly
+
+## 🔄 Version History
+
+### Latest Updates (v2.1.0) - Data Refresh Feature
+- ✅ **Smart Data Refresh**: One-click refresh with safety confirmations
+- ✅ **Data Freshness Indicators**: Color-coded age indicators with recommendations
+- ✅ **Progress Tracking**: Real-time feedback during API operations
+- ✅ **Error Handling**: Robust error messages and recovery options
+- ✅ **Auto-reload**: Automatic page refresh after successful updates
+- ✅ **User Experience**: Intuitive warnings and confirmations before API calls
+
+### Previous Updates (v2.0.0) - Production Ready
 - ✅ **Enhanced Data Explorer**: Custom HTML table with right-aligned price columns
 - ✅ **Professional Formatting**: Currency formatting with S$ prefix and comma separators
 - ✅ **Dark Theme Support**: Transparent backgrounds for better theme compatibility
 - ✅ **Improved Readability**: Monospace font for price columns ensures consistent alignment
 - ✅ **Cross-browser Compatibility**: Multiple CSS/JavaScript targeting methods for reliability
+- ✅ **Optimized Performance**: Streamlined dependencies and code cleanup
+- ✅ **Documentation**: Comprehensive README with technical details
+
+---
+
+**Last Updated**: August 2025 | **Version**: 2.1.0 - Data Refresh Feature Ready
 - ✅ **Month Filter**: Added month selection filter for time-based data analysis with reverse chronological order
 - ✅ **Smart Number Display**: Floor area shows as integers when appropriate (85.0 → 85)
 - ✅ **Enhanced Date Format**: Month column displays in readable Jan-2017 format
